@@ -23,7 +23,7 @@ const registerUser = async (req, res) => {
 
     let user = await User.findOne({ email });
     if (user) {
-      res.status(400).json({ error: "user already exists" });
+      return res.status(400).json({ error: "user already exists" });
     }
 
     let newUser = await new User({
@@ -84,4 +84,27 @@ const logOutUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, logOutUser };
+const chechAuth = async (req, res) => {
+  let token = req.cookies.token;
+
+  if (!token) {
+    return res.status(401).json({ error: "You are not loggedin" });
+  }
+
+  let decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+  if (!decodedToken) {
+    return res.status(404).json({ error: "Token not Found" });
+  }
+
+  let user = await User.findOne({ _id: decodedToken.id }).select("-password");
+  if (!user) {
+    return res.status(404).json({ error: "user not found" });
+  }
+
+  return res.status(200).json({
+    name: user.name,
+    email: user.email,
+  });
+};
+
+export { registerUser, loginUser, logOutUser, chechAuth };
