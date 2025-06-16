@@ -15,7 +15,7 @@ const blogSchema = new mongoose.Schema(
       required: true,
     },
     author: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -26,7 +26,7 @@ const blogSchema = new mongoose.Schema(
     },
     likes: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
     ],
@@ -36,7 +36,7 @@ const blogSchema = new mongoose.Schema(
     },
     comments: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Comments",
       },
     ],
@@ -48,4 +48,4 @@ const blogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const Blogs = new mongoose.model("Blogs", blogSchema);
+export const Blog = new mongoose.model("Blog", blogSchema);

@@ -23,6 +23,9 @@ connectDB();
 import authRoutes from "./routes/auth.route.js";
 app.use("/api/v1/auth", authRoutes);
 
+import blogRoutes from "./routes/blog.route.js";
+app.use("/api/v1/blog", blogRoutes);
+
 app.listen(PORT, () => {
   console.log(`server started on port ${PORT}`);
 });
