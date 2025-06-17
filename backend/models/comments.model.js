@@ -7,13 +7,13 @@ const commentSchema = new mongoose.Schema(
       required: true,
     },
     authorId: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     blogId: {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Blog",
       required: true,
     },
   },

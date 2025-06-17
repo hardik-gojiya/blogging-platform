@@ -47,4 +47,98 @@ const getAllBugs = async (req, res) => {
   }
 };
 
-export { createBlog, getAllBugs };
+const getAllBlogsOfOneUser = async (req, res) => {
+  try {
+    let userid = req.user._id;
+    let blogs = await Blog.find({ author: userid });
+    if (!blogs) {
+      return res.status(404).json({ error: "No blogs found" });
+    }
+
+    return res.status(200).json({ blogs });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const publishBlog = async (req, res) => {
+  let blogId = req.params.id;
+  try {
+    let userid = req.user._id;
+    let blog = await Blog.findOne({ _id: blogId, author: userid });
+    if (!blog) {
+      return res.status(404).json({ error: "blog not found" });
+    }
+    if (blog.published) {
+      return res.status(400).json({ error: "blog is already pubished" });
+    }
+    blog.published = true;
+    await blog.save();
+
+    return res.status(200).json({ blog, message: "blog is published" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const deleteBlog = async (req, res) => {
+  const blogId = req.params.id;
+  try {
+    let userid = req.user._id;
+    let blog = await Blog.findOne({ _id: blogId, author: userid });
+    if (!blog) {
+      return res.status(404).json({ error: "blog not found" });
+    }
+    let deleteBlogRef = await blog.deleteOne();
+    if (!deleteBlogRef) {
+      return res.status(400).json({ error: "Error in delete blog" });
+    }
+
+    return res.status(200).json({ message: "blog deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const addOrRemoveLike = async (req, res) => {
+  const blogId = req.params.id;
+  try {
+    const userId = req.user._id;
+    let blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ error: "blog not found" });
+    }
+    const alreadyLiked = blog.likes.some(
+      (id) => id.toString() === userId.toString()
+    );
+    if (alreadyLiked) {
+      blog.likes = blog.likes.filter((id) => {
+        return id.toString() !== userId.toString();
+      });
+    } else {
+      blog.likes.push(userId);
+    }
+    blog.likesCount = blog.likes.length;
+    await blog.save();
+
+    return res.status(200).json({
+      message: alreadyLiked ? "Like removed" : "Blog liked",
+      likesCount: blog.likesCount,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export {
+  createBlog,
+  getAllBugs,
+  getAllBlogsOfOneUser,
+  publishBlog,
+  deleteBlog,
+  addOrRemoveLike,
+};
