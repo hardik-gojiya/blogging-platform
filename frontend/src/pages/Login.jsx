@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { api } from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { islogedin, setIslogedin } = useAuth();
+  const { checkLoggedin, islogedin, setIslogedin } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,11 +25,16 @@ function Login() {
         setEmail("");
         setPassword("");
         navigate("/");
+        await checkLoggedin();
       }
     } catch (error) {
       alert(error?.response?.data?.error || "Error in login");
     }
   };
+
+  if (islogedin) {
+    return <Navigate to={"/"} />;
+  }
 
   return (
     <div>

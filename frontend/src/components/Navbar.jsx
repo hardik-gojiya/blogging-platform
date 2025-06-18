@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { CircleUserRound } from "lucide-react";
 
 function Navbar() {
   const { islogedin, name, email, handleLogOut } = useAuth();
@@ -11,6 +12,10 @@ function Navbar() {
         <div>
           {" "}
           <p>{name}</p>
+          <Link to="/personal-profile">
+            <CircleUserRound />
+            {name.split("")[0].toUpperCase()}
+          </Link>
           <button onClick={handleLogOut}>logout</button>
         </div>
       ) : (
@@ -19,6 +24,8 @@ function Navbar() {
           <Link to="/login">login</Link>
         </>
       )}
+      <hr />
+      <hr />
     </div>
   );
 }

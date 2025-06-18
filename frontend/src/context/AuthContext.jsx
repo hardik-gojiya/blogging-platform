@@ -9,15 +9,16 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [islogedin, setIslogedin] = useState(false);
+  const [userId, setUserId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
   const checkLoggedin = async () => {
     try {
       let res = await api.get("/auth/checkAuth");
-
       if (res.status === 200) {
         setIslogedin(true);
+        setUserId(res.data.userId);
         setEmail(res.data.email);
         setName(res.data.name);
       }
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }) => {
         let res = await api.post("/auth/logout");
         alert(res?.data?.message || "logout succesfully");
         setIslogedin(false);
+        setUserId(null);
         setEmail("");
         setName("");
       }
@@ -48,6 +50,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider
       value={{
+        userId,
         checkLoggedin,
         islogedin,
         setIslogedin,

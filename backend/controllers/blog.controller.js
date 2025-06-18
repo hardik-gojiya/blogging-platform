@@ -49,8 +49,23 @@ const getAllBugs = async (req, res) => {
 
 const getAllBlogsOfOneUser = async (req, res) => {
   try {
-    let userid = req.user._id;
+    let userid = req.params.id;
     let blogs = await Blog.find({ author: userid });
+    if (!blogs) {
+      return res.status(404).json({ error: "No blogs found" });
+    }
+
+    return res.status(200).json({ blogs });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const getAllPublishBlogsOfOneUser = async (req, res) => {
+  try {
+    let userid = req.params.id;
+    let blogs = await Blog.find({ author: userid, published: true });
     if (!blogs) {
       return res.status(404).json({ error: "No blogs found" });
     }
@@ -138,6 +153,7 @@ export {
   createBlog,
   getAllBugs,
   getAllBlogsOfOneUser,
+  getAllPublishBlogsOfOneUser,
   publishBlog,
   deleteBlog,
   addOrRemoveLike,

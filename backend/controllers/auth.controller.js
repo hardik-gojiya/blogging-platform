@@ -51,7 +51,7 @@ const loginUser = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("-password");
     if (!user) {
       return res.status(400).json({ error: "user not found" });
     }
@@ -64,7 +64,7 @@ const loginUser = async (req, res) => {
       secure: false,
     });
 
-    return res.status(200).json({ message: "login successfull" });
+    return res.status(200).json({ message: "login successfull", user });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "internal server error" });
@@ -102,6 +102,7 @@ const chechAuth = async (req, res) => {
   }
 
   return res.status(200).json({
+    userId: user._id,
     name: user.name,
     email: user.email,
   });
