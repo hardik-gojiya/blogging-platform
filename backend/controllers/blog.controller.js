@@ -35,7 +35,10 @@ const createBlog = async (req, res) => {
 
 const getAllBugs = async (req, res) => {
   try {
-    let blogs = await Blog.find({ published: true });
+    let blogs = await Blog.find({ published: true })
+      .sort({ createdAt: -1 })
+      .populate("author")
+      .populate("Comment");
     if (!blogs) {
       return res.status(404).json({ error: "No blogs found" });
     }

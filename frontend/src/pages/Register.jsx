@@ -39,18 +39,21 @@ function Register() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Enter your name"
+          required
         />
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter email"
+          required
         />
         <input
           type="text"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter password"
+          required
         />
         <button type="submit">Register</button>
       </form>

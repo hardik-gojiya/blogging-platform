@@ -44,6 +44,7 @@ function Profile() {
                   <MessageSquare />
                   {blog.commentsCount}
                 </button>
+                
                 <button>
                   <Trash2 />
                 </button>

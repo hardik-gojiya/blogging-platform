@@ -16,7 +16,7 @@ const blogSchema = new mongoose.Schema(
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Users",
       required: true,
     },
     tags: [{ type: String }],
@@ -37,7 +37,7 @@ const blogSchema = new mongoose.Schema(
     comments: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Comments",
+        ref: "Comment",
       },
     ],
     commentsCount: {

@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema(
   {
+    repliedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+    },
     content: {
       type: String,
       required: true,
@@ -20,4 +24,4 @@ const commentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const Comments = new mongoose.model("Comments", commentSchema);
+export const Comment = new mongoose.model("Comment", commentSchema);

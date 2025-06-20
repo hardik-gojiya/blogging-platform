@@ -26,6 +26,9 @@ app.use("/api/v1/auth", authRoutes);
 import blogRoutes from "./routes/blog.route.js";
 app.use("/api/v1/blog", blogRoutes);
 
+import commentRoutes from "./routes/comment.route.js";
+app.use("/api/v1/comment", commentRoutes);
+
 app.listen(PORT, () => {
   console.log(`server started on port ${PORT}`);
 });
