@@ -38,7 +38,22 @@ const getAllBugs = async (req, res) => {
     let blogs = await Blog.find({ published: true })
       .sort({ createdAt: -1 })
       .populate("author", "email name")
-      .populate("comments");
+      .populate({
+        path: "comments",
+        populate: [
+          {
+            path: "authorId",
+            select: "name email",
+          },
+          {
+            path: "replies",
+            populate: {
+              path: "authorId",
+              select: "name email",
+            },
+          },
+        ],
+      });
     if (!blogs) {
       return res.status(404).json({ error: "No blogs found" });
     }
@@ -50,10 +65,43 @@ const getAllBugs = async (req, res) => {
   }
 };
 
+const getBlogById = async (req, res) => {
+  const blogId = req.params.id;
+  try {
+    let blog = await Blog.findById(blogId)
+      .populate("author", "email name")
+      .populate({
+        path: "comments",
+        populate: [
+          {
+            path: "authorId",
+            select: "name email",
+          },
+          {
+            path: "replies",
+            populate: {
+              path: "authorId",
+              select: "name email",
+            },
+          },
+        ],
+      });
+
+    if (!blog) {
+      return res.status(404).json({ error: "blog not found" });
+    }
+
+    return res.status(200).json({ blog });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 const getAllBlogsOfOneUser = async (req, res) => {
   try {
     let userid = req.params.id;
-    let blogs = await Blog.find({ author: userid });
+    let blogs = await Blog.find({ author: userid }).sort({ createdAt: -1 });
     if (!blogs) {
       return res.status(404).json({ error: "No blogs found" });
     }
@@ -155,6 +203,7 @@ const addOrRemoveLike = async (req, res) => {
 export {
   createBlog,
   getAllBugs,
+  getBlogById,
   getAllBlogsOfOneUser,
   getAllPublishBlogsOfOneUser,
   publishBlog,

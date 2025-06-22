@@ -21,6 +21,12 @@ const commentSchema = new mongoose.Schema(
       ref: "Blog",
       required: true,
     },
+    replies: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment",
+      },
+    ],
   },
   { timestamps: true }
 );

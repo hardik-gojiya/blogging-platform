@@ -8,10 +8,13 @@ import NotFound from "./components/NotFound";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./hooks/ProtectedRoute";
 import CreateBlogForm from "./components/CreateBlogForm";
+import SingleBlogPage from "./components/SingleBlogPage";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
     <>
+      <Toaster position="top-right" reverseOrder={false} />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -34,6 +37,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path={`/blog/:id`} element={<SingleBlogPage />} />
+        <Route path={`/blog/:slug`} element={<SingleBlogPage />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -41,29 +41,32 @@ const replyToComment = async (req, res) => {
   const { content } = req.body;
   const commentId = req.params.id;
   const userId = req.user._id;
+
   if (!content) {
     return res.status(400).json({ error: "Comment content is required" });
   }
+
   try {
-    let comment = await Comment.findOne({ _id: commentId });
-    if (!comment) {
-      return res.status(400).json({ error: "Comment not Found" });
+    const parentComment = await Comment.findById(commentId);
+    if (!parentComment) {
+      return res.status(404).json({ error: "Parent comment not found" });
     }
-    let commentRef = new Comment({
+
+    const reply = new Comment({
       repliedTo: commentId,
       content,
       authorId: userId,
-      blogId: comment.blogId,
+      blogId: parentComment.blogId,
     });
-    if (!commentRef) {
-      return res.status(400).json({ error: "Error in comment" });
-    }
 
-    await commentRef.save();
+    await reply.save();
 
-    return res.status(201).json({ message: "Comment Sucessfull", commentRef });
+    parentComment.replies.push(reply._id);
+    await parentComment.save();
+
+    return res.status(201).json({ message: "Reply added", comment: reply });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

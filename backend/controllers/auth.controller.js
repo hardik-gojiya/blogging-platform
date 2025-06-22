@@ -51,9 +51,13 @@ const loginUser = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email }).select("-password");
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(400).json({ error: "user not found" });
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: "Invalid password" });
     }
 
     const token = generateToken(user._id);

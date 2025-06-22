@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { api } from "../services/api";
+import { useToast } from "../hooks/useToast";
 
 const BlogContext = createContext();
 
@@ -9,6 +10,7 @@ export const useBlog = () => {
 };
 
 export const BlogProvider = ({ children }) => {
+  const { showSuccess, showError, showConfirm } = useToast();
   const { userId } = useAuth();
   const [myBlogs, setMyblogs] = useState([]);
   const [allBlogs, setAllblogs] = useState([]);
@@ -22,7 +24,7 @@ export const BlogProvider = ({ children }) => {
     } catch (error) {
       console.log(error);
       setMyblogs([]);
-      alert("somthing went wrong");
+      showError("somthing went wrong");
     }
   };
 
@@ -35,7 +37,7 @@ export const BlogProvider = ({ children }) => {
     } catch (error) {
       console.log(error);
       setAllblogs([]);
-      alert("somthing went wrong");
+      showError("somthing went wrong");
     }
   };
 
@@ -47,20 +49,25 @@ export const BlogProvider = ({ children }) => {
   }, [userId]);
 
   const deleteBlog = async (id) => {
-    try {
-      if (!window.confirm("Are you sure you want to delete")) {
-        return;
-      }
-      let res = await api.delete(`/blog/deleteBlog/${id}`);
-      if (res.status === 200) {
-        alert(res?.data?.message);
-        fetchMyBlogs();
-        fetchAllBlogs();
-      }
-    } catch (error) {
-      console.log(error);
-      alert(error?.response?.data?.error);
-    }
+    showConfirm({
+      message: "Do you really want to delete this blog?",
+      onOk: async () => {
+        try {
+          const res = await api.delete(`/blog/deleteBlog/${id}`);
+          if (res.status === 200) {
+            showSuccess(res?.data?.message || "Deleted successfully");
+            fetchMyBlogs();
+            fetchAllBlogs();
+          }
+        } catch (error) {
+          console.error(error);
+          showError(error?.response?.data?.error || "Deletion failed");
+        }
+      },
+      onCancel: () => {
+        showError("Cancelled");
+      },
+    });
   };
 
   const handleLike = async (id) => {
@@ -72,20 +79,27 @@ export const BlogProvider = ({ children }) => {
       }
     } catch (error) {
       console.log(error);
-      alert(error?.response?.data?.error);
+      showError(error?.response?.data?.error);
     }
   };
 
   const handlePublishBlog = async (id) => {
-    try {
-      let res = await api.put(`/blog/publishBlog/${id}`);
-      if (res.status === 200) {
-        fetchMyBlogs();
-      }
-    } catch (error) {
-      console.log(error);
-      alert(error?.response?.data?.error);
-    }
+    showConfirm({
+      message: "Do you want to publish this blog?",
+      onOk: async () => {
+        try {
+          let res = await api.put(`/blog/publishBlog/${id}`);
+          if (res.status === 200) {
+            fetchMyBlogs();
+            showSuccess(res?.data?.message || "published sucessfully");
+          }
+        } catch (error) {
+          console.log(error);
+          showError(error?.response?.data?.error);
+        }
+      },
+      onCancel: () => {},
+    });
   };
   return (
     <BlogContext.Provider
@@ -93,6 +107,8 @@ export const BlogProvider = ({ children }) => {
         myBlogs,
         handleLike,
         handlePublishBlog,
+        fetchAllBlogs,
+        fetchMyBlogs,
         setAllblogs,
         allBlogs,
         deleteBlog,

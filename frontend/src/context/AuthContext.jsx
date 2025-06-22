@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../services/api.js";
+import { useToast } from "../hooks/useToast.jsx";
 
 const AuthContext = createContext();
 
@@ -8,6 +9,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const { showSuccess, showError, showConfirm } = useToast();
   const [islogedin, setIslogedin] = useState(false);
   const [userId, setUserId] = useState("");
   const [name, setName] = useState("");
@@ -29,18 +31,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   const handleLogOut = async () => {
-    try {
-      if (window.confirm("are you sure you want to logout")) {
-        let res = await api.post("/auth/logout");
-        alert(res?.data?.message || "logout succesfully");
-        setIslogedin(false);
-        setUserId(null);
-        setEmail("");
-        setName("");
-      }
-    } catch (error) {
-      alert(error?.response?.data?.error || "error in logout");
-    }
+    showConfirm({
+      message: "Do you want to Logout?",
+      onOk: async () => {
+        try {
+          let res = await api.post("/auth/logout");
+          showSuccess(res?.data?.message || "logout succesfully");
+          setIslogedin(false);
+          setUserId(null);
+          setEmail("");
+          setName("");
+        } catch (error) {
+          showError(error?.response?.data?.error || "error in logout");
+        }
+      },
+      onCancel: () => {},
+    });
   };
 
   useEffect(() => {
