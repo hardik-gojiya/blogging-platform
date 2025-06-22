@@ -26,7 +26,7 @@ function Profile() {
             {myBlogs.map((blog) => (
               <div key={blog._id}>
                 <p>{blog.title}</p>
-                <p>{blog.content}</p>
+                <p dangerouslySetInnerHTML={{ __html: blog.content }}></p>
                 {blog.tags.map((tag, idx) => (
                   <li key={idx}>#{tag}</li>
                 ))}
@@ -44,7 +44,7 @@ function Profile() {
                   <MessageSquare />
                   {blog.commentsCount}
                 </button>
-                
+
                 <button>
                   <Trash2 />
                 </button>

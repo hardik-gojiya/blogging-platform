@@ -37,8 +37,8 @@ const getAllBugs = async (req, res) => {
   try {
     let blogs = await Blog.find({ published: true })
       .sort({ createdAt: -1 })
-      .populate("author")
-      .populate("Comment");
+      .populate("author", "email name")
+      .populate("comments");
     if (!blogs) {
       return res.status(404).json({ error: "No blogs found" });
     }

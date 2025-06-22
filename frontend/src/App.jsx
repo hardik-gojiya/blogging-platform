@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import NotFound from "./components/NotFound";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./hooks/ProtectedRoute";
+import CreateBlogForm from "./components/CreateBlogForm";
 
 function App() {
   return (
@@ -22,6 +23,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/Create-Blog"
+          element={
+            <ProtectedRoute>
+              <CreateBlogForm />
             </ProtectedRoute>
           }
         />

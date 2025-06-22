@@ -6,10 +6,18 @@ import { CircleUserRound } from "lucide-react";
 function Navbar() {
   const { islogedin, name, email, handleLogOut } = useAuth();
   return (
-    <div>
+    <div
+      style={{
+        position: "sticky",
+        top: "0px",
+        backgroundColor: "black",
+        color: "white",
+      }}
+    >
       <Link to="/">Home</Link>
+      <Link to={"/Create-Blog"}>Create Blog</Link>
       {islogedin ? (
-        <div>
+        <div style={{ display: "flex" }}>
           {" "}
           <p>{name}</p>
           <Link to="/personal-profile">
