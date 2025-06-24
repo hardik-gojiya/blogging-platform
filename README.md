@@ -144,12 +144,3 @@ Your apps will be running at:
 🌐 Portfolio: [hardik-gojiya-portfolio.netlify.app](https://hardik-gojiya-portfolio.netlify.app)
 
 ---
-
-## 📜 License
-
-This project is licensed under the **MIT License**.
-
----
-
-If you’d like help adding live demo links, screenshots, badges, or deployment scripts—just say the word!
-::contentReference[oaicite:0]{index=0}
