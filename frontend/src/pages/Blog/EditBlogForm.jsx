@@ -1,67 +1,92 @@
-import React, { useState } from "react";
-import { RichTextEditor } from "@mantine/rte";
-import { api } from "../services/api";
-import { useNavigate } from "react-router-dom";
-import { useBlog } from "../context/BlogContext";
-import { useToast } from "../hooks/useToast";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { api } from "../../services/api";
+import RichTextEditor from "@mantine/rte";
+import { useToast } from "../../hooks/useToast";
 
-function CreateBlogForm() {
-  const { showSuccess, showError } = useToast();
+const EditBlogForm = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [content, setContent] = useState("");
+  const { showSuccess, showError } = useToast();
   const [title, setTitle] = useState("");
-  const [tags, setTags] = useState(["Blog"]);
+  const [content, setContent] = useState("");
+  const [tags, setTags] = useState([]);
   const [localTag, setLocalTag] = useState("");
   const [isChecked, setIsChecked] = useState(false);
-  const { fetchAllBlogs, fetchMyBlogs } = useBlog();
+  const [loading, setLoading] = useState(false);
 
-  const handleCheckboxChange = () => {
-    setIsChecked(!isChecked);
+  useEffect(() => {
+    const fetchBlog = async () => {
+      try {
+        const res = await api.get(`/blog/getBlogById/${id}`);
+        const blog = res.data.blog;
+        setTitle(blog.title);
+        setContent(blog.content);
+        setTags(blog.tags || []);
+        setIsChecked(blog.published);
+      } catch (error) {
+        showError("Failed to load blog");
+      }
+    };
+
+    fetchBlog();
+  }, [id]);
+
+  const handleUpdate = async () => {
+    if (!title.trim() || !content.trim()) {
+      showError("Title and content are required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await api.put(`/blog/editBlog/${id}`, {
+        title,
+        content,
+        tags,
+        published: isChecked,
+      });
+
+      if (res.status === 200) {
+        showSuccess("Blog updated successfully");
+        navigate(`/blog/${id}`);
+      }
+    } catch (err) {
+      showError(err.response?.data?.error || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
+
   const handleAddTag = () => {
-    if (localTag) {
-      tags.push(localTag.trim().toLowerCase().replace(/\s+/g, ""));
+    const trimmedTag = localTag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags((prev) => [...prev, trimmedTag]);
       setLocalTag("");
     }
   };
+
   const handleRemoveTag = (e, tag) => {
     e.preventDefault();
     setTags((prev) => prev.filter((t) => t !== tag));
   };
 
-  const handleSubmit = async () => {
-    try {
-      let res = await api.post(`/blog/createBlog`, {
-        title: title.trim(),
-        slug: title.trim().toLowerCase().replace(/\s+/g, "-"),
-        content,
-        tags: Array.isArray(tags)
-          ? tags
-          : tags.split(",").map((tag) => tag.trim()),
-        published: isChecked,
-      });
-      console.log(res);
-      if (res.status === 201) {
-        showSuccess(res.data.message || "blog created sucessfully");
-        setTitle("");
-        setContent("");
-        setTags("");
-        setLocalTag("");
-        fetchAllBlogs();
-        fetchMyBlogs();
-        navigate("/personal-profile");
-      }
-    } catch (error) {
-      console.log(error);
-      showError(error?.response?.data?.error || "something went wrong");
-    }
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked);
   };
 
   return (
     <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-lg mt-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Create Blog</h1>
+      <div className="flex justify-between">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Edit Blog</h1>
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-2 text-gray-600 hover:underline flex items-center gap-1"
+        >
+          Cancle
+        </button>
+      </div>
       <form className="space-y-6">
-        {/* Title */}
         <input
           type="text"
           placeholder="Enter title"
@@ -70,10 +95,8 @@ function CreateBlogForm() {
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
         />
 
-        {/* Rich Text Editor */}
         <RichTextEditor value={content} onChange={setContent} />
 
-        {/* Tag Input + Add Button */}
         <div className="flex gap-2">
           <input
             type="text"
@@ -91,7 +114,6 @@ function CreateBlogForm() {
           </button>
         </div>
 
-        {/* Tag List */}
         {tags.length > 0 && (
           <div>
             <p className="text-sm font-medium text-gray-700 mb-1">Tags:</p>
@@ -114,7 +136,6 @@ function CreateBlogForm() {
           </div>
         )}
 
-        {/* Publish Toggle */}
         <label className="relative inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
@@ -129,17 +150,17 @@ function CreateBlogForm() {
           </span>
         </label>
 
-        {/* Save Button */}
         <button
           type="button"
-          onClick={handleSubmit}
+          onClick={handleUpdate}
+          disabled={loading}
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
         >
-          Save Blog
+          {loading ? "Updating..." : "Update Blog"}
         </button>
       </form>
     </div>
   );
-}
+};
 
-export default CreateBlogForm;
+export default EditBlogForm;

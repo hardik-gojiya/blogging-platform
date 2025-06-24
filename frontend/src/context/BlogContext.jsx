@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { api } from "../services/api";
 import { useToast } from "../hooks/useToast";
@@ -10,8 +11,9 @@ export const useBlog = () => {
 };
 
 export const BlogProvider = ({ children }) => {
+  const navigate = useNavigate();
   const { showSuccess, showError, showConfirm } = useToast();
-  const { userId } = useAuth();
+  const { userId, islogedin } = useAuth();
   const [myBlogs, setMyblogs] = useState([]);
   const [allBlogs, setAllblogs] = useState([]);
 
@@ -58,6 +60,7 @@ export const BlogProvider = ({ children }) => {
             showSuccess(res?.data?.message || "Deleted successfully");
             fetchMyBlogs();
             fetchAllBlogs();
+            navigate(-1);
           }
         } catch (error) {
           console.error(error);
@@ -72,14 +75,21 @@ export const BlogProvider = ({ children }) => {
 
   const handleLike = async (id) => {
     try {
-      let res = await api.post(`/blog/like-unlikeBlog/${id}`);
+      if (!islogedin) {
+        showError("Login required");
+        navigate("/login");
+        return null;
+      }
+      const res = await api.post(`/blog/like-unlikeBlog/${id}`);
       if (res.status === 200) {
         fetchMyBlogs();
         fetchAllBlogs();
+        fecthParticularUser();
       }
     } catch (error) {
       console.log(error);
       showError(error?.response?.data?.error);
+      return null;
     }
   };
 
@@ -101,6 +111,22 @@ export const BlogProvider = ({ children }) => {
       onCancel: () => {},
     });
   };
+
+  const fecthParticularUser = async (profileId) => {
+    if (!profileId) {
+      return;
+    }
+    try {
+      let res = await api.get(`/blog/getAllPublishBlogsOfOneUser/${profileId}`);
+      if (res.status === 200) {
+        return res;
+      }
+    } catch (error) {
+      console.log(error);
+      showError("somthing went wrong");
+    }
+  };
+
   return (
     <BlogContext.Provider
       value={{
@@ -112,6 +138,7 @@ export const BlogProvider = ({ children }) => {
         setAllblogs,
         allBlogs,
         deleteBlog,
+        fecthParticularUser,
       }}
     >
       {children}

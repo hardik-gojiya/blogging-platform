@@ -37,19 +37,19 @@ const getAllBugs = async (req, res) => {
   try {
     let blogs = await Blog.find({ published: true })
       .sort({ createdAt: -1 })
-      .populate("author", "email name")
+      .populate("author", "email username")
       .populate({
         path: "comments",
         populate: [
           {
             path: "authorId",
-            select: "name email",
+            select: "username email",
           },
           {
             path: "replies",
             populate: {
               path: "authorId",
-              select: "name email",
+              select: "username email",
             },
           },
         ],
@@ -69,19 +69,19 @@ const getBlogById = async (req, res) => {
   const blogId = req.params.id;
   try {
     let blog = await Blog.findById(blogId)
-      .populate("author", "email name")
+      .populate("author", "email username")
       .populate({
         path: "comments",
         populate: [
           {
             path: "authorId",
-            select: "name email",
+            select: "username email",
           },
           {
             path: "replies",
             populate: {
               path: "authorId",
-              select: "name email",
+              select: "username email",
             },
           },
         ],
@@ -101,7 +101,25 @@ const getBlogById = async (req, res) => {
 const getAllBlogsOfOneUser = async (req, res) => {
   try {
     let userid = req.params.id;
-    let blogs = await Blog.find({ author: userid }).sort({ createdAt: -1 });
+    let blogs = await Blog.find({ author: userid })
+      .sort({ createdAt: -1 })
+      .populate("author", "email username")
+      .populate({
+        path: "comments",
+        populate: [
+          {
+            path: "authorId",
+            select: "username email",
+          },
+          {
+            path: "replies",
+            populate: {
+              path: "authorId",
+              select: "username email",
+            },
+          },
+        ],
+      });
     if (!blogs) {
       return res.status(404).json({ error: "No blogs found" });
     }
@@ -116,12 +134,34 @@ const getAllBlogsOfOneUser = async (req, res) => {
 const getAllPublishBlogsOfOneUser = async (req, res) => {
   try {
     let userid = req.params.id;
-    let blogs = await Blog.find({ author: userid, published: true });
+    let user = await User.findById(userid);
+    if (!user) {
+      return res.status(404).json({ error: "user not found" });
+    }
+    let blogs = await Blog.find({ author: userid, published: true })
+      .sort({ createdAt: -1 })
+      .populate("author", "email username")
+      .populate({
+        path: "comments",
+        populate: [
+          {
+            path: "authorId",
+            select: "username email",
+          },
+          {
+            path: "replies",
+            populate: {
+              path: "authorId",
+              select: "username email",
+            },
+          },
+        ],
+      });
     if (!blogs) {
       return res.status(404).json({ error: "No blogs found" });
     }
 
-    return res.status(200).json({ blogs });
+    return res.status(200).json({ user, blogs });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -200,6 +240,35 @@ const addOrRemoveLike = async (req, res) => {
   }
 };
 
+const editBlog = async (req, res) => {
+  const blogId = req.params.id;
+  const { title, content, tags, published } = req.body;
+
+  try {
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    if (req.user._id.toString() !== blog.author.toString()) {
+      return res.status(403).json({ error: "Unauthorized to edit this blog" });
+    }
+
+    blog.title = title || blog.title;
+    blog.slug = title ? title.split(" ").join("-").toLowerCase() : blog.slug;
+    blog.content = content || blog.content;
+    blog.tags = tags || blog.tags;
+    blog.published =
+      typeof published === "boolean" ? published : blog.published;
+
+    await blog.save();
+
+    return res.status(200).json({ message: "Blog updated successfully", blog });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 export {
   createBlog,
   getAllBugs,
@@ -209,4 +278,5 @@ export {
   publishBlog,
   deleteBlog,
   addOrRemoveLike,
+  editBlog,
 };

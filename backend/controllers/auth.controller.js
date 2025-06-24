@@ -9,10 +9,24 @@ const generateToken = (id) => {
   return token;
 };
 
-const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+const checkUserName = async (req, res) => {
+  const { name } = req.body;
+  try {
+    let username = await User.findOne({ username: name });
+    if (username) {
+      return res.status(400).json({ message: "Username not available" });
+    }
+    return res.status(200).json({ message: "Username Available" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "internal server error" });
+  }
+};
 
-  if (!name || !email || !password) {
+const registerUser = async (req, res) => {
+  const { name: username, email, password } = req.body;
+
+  if (!username || !email || !password) {
     return res.status(400).json({ error: "all fields are require" });
   }
   try {
@@ -27,7 +41,7 @@ const registerUser = async (req, res) => {
     }
 
     let newUser = await new User({
-      name,
+      username,
       email,
       password: hashedPass,
     });
@@ -39,6 +53,7 @@ const registerUser = async (req, res) => {
 
     return res.status(201).json({ message: "register successfully" });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: "internal server error" });
   }
 };
@@ -107,9 +122,9 @@ const chechAuth = async (req, res) => {
 
   return res.status(200).json({
     userId: user._id,
-    name: user.name,
+    username: user.username,
     email: user.email,
   });
 };
 
-export { registerUser, loginUser, logOutUser, chechAuth };
+export { checkUserName, registerUser, loginUser, logOutUser, chechAuth };

@@ -3,6 +3,7 @@ import {
   addOrRemoveLike,
   createBlog,
   deleteBlog,
+  editBlog,
   getAllBlogsOfOneUser,
   getAllBugs,
   getAllPublishBlogsOfOneUser,
@@ -20,6 +21,7 @@ router.get("/getAllBlogsofOneUser/:id", AuthMiddleware, getAllBlogsOfOneUser);
 router.get("/getAllPublishBlogsOfOneUser/:id", getAllPublishBlogsOfOneUser);
 router.put("/publishBlog/:id", AuthMiddleware, publishBlog);
 router.delete("/deleteBlog/:id", AuthMiddleware, deleteBlog);
+router.put("/editBlog/:id", AuthMiddleware, editBlog);
 router.post("/like-unlikeBlog/:id", AuthMiddleware, addOrRemoveLike);
 
 export default router;

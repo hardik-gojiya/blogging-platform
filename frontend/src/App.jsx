@@ -2,14 +2,17 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
 import NotFound from "./components/NotFound";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./hooks/ProtectedRoute";
-import CreateBlogForm from "./components/CreateBlogForm";
-import SingleBlogPage from "./components/SingleBlogPage";
+import SingleBlogPage from "./pages/Blog/SingleBlogPage";
 import { Toaster } from "react-hot-toast";
+import EditBlogForm from "./pages/Blog/EditBlogForm";
+import CreateBlogForm from "./pages/Blog/CreateBlogForm";
+import Register from "./pages/Auth/Register";
+import Login from "./pages/Auth/Login";
+import PersonalProfile from "./pages/User/PersonalProfile";
+import MyBlogs from "./pages/Blog/MyBlogs";
 
 function App() {
   return (
@@ -25,6 +28,22 @@ function App() {
           path="/personal-profile"
           element={
             <ProtectedRoute>
+              <PersonalProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-blogs"
+          element={
+            <ProtectedRoute>
+              <MyBlogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/:id"
+          element={
+            <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
           }
@@ -34,6 +53,15 @@ function App() {
           element={
             <ProtectedRoute>
               <CreateBlogForm />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/edit-Blog/:id"
+          element={
+            <ProtectedRoute>
+              <EditBlogForm />
             </ProtectedRoute>
           }
         />

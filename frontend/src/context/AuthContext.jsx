@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const { showSuccess, showError, showConfirm } = useToast();
   const [islogedin, setIslogedin] = useState(false);
   const [userId, setUserId] = useState("");
-  const [name, setName] = useState("");
+  const [username, setuserName] = useState("");
   const [email, setEmail] = useState("");
 
   const checkLoggedin = async () => {
@@ -22,10 +22,13 @@ export const AuthProvider = ({ children }) => {
         setIslogedin(true);
         setUserId(res.data.userId);
         setEmail(res.data.email);
-        setName(res.data.name);
+        setuserName(res.data.username);
       }
     } catch (error) {
       setIslogedin(false);
+      setUserId("");
+      setEmail("");
+      setuserName("");
       console.log(error);
     }
   };
@@ -40,7 +43,7 @@ export const AuthProvider = ({ children }) => {
           setIslogedin(false);
           setUserId(null);
           setEmail("");
-          setName("");
+          setuserName("");
         } catch (error) {
           showError(error?.response?.data?.error || "error in logout");
         }
@@ -60,7 +63,7 @@ export const AuthProvider = ({ children }) => {
         checkLoggedin,
         islogedin,
         setIslogedin,
-        name,
+        username,
         email,
         handleLogOut,
       }}
