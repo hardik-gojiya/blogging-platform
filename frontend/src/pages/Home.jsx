@@ -1,15 +1,8 @@
-
 import { useBlog } from "../context/BlogContext";
-import { useAuth } from "../context/AuthContext";
 import BlogCard from "./Blog/BlogCard";
 
 function Home() {
-  const { userId } = useAuth();
-  const { allBlogs, handleLike, deleteBlog } = useBlog();
-
-  const stripHtmlTags = (html) => {
-    return html.replace(/<[^>]*>?/gm, "");
-  };
+  const { allBlogs } = useBlog();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 text-wrap">

@@ -20,7 +20,7 @@ function BlogCard({ blog }) {
     >
       <div className="flex justify-between">
         <Link
-          to={`/blog/${blog._id}`}
+          to={`/blog/${blog.slug}`}
           className="text-2xl font-semibold text-gray-800 mb-2 hover:underline"
         >
           {blog.title}

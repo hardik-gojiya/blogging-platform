@@ -13,7 +13,7 @@ function SingleBlogPage() {
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
   const { islogedin, userId } = useAuth();
-  const { id: blogId } = useParams();
+  const { identifier } = useParams();
   const [blog, setBlog] = useState(null);
   const [localComment, setLocalComment] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
@@ -37,8 +37,17 @@ function SingleBlogPage() {
   }, []);
 
   const fetchBlog = async () => {
+    let res;
     try {
-      const res = await api(`/blog/getBlogById/${blogId}`);
+      if (!identifier) return;
+
+      if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
+        // MongoDB ObjectId format — fetch by ID
+        res = await api.get(`/blog/getBlogById/${identifier}`);
+      } else {
+        // Otherwise, treat as slug
+        res = await api.get(`/blog/getBlogBySlug/${identifier}`);
+      }
       if (res.status === 200) {
         setBlog(res.data.blog);
       }
@@ -104,10 +113,18 @@ function SingleBlogPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 break-words">
             {blog.title}
-          </h1>
-          <p className="text-gray-500 text-sm">
-            By <span className="font-medium">{blog.author.name}</span>
-          </p>
+          </h1>{" "}
+          By{" "}
+          <Link
+            to={
+              userId === blog.author._id
+                ? "/personal-profile"
+                : `/profile/${blog.author._id}`
+            }
+            className="text-gray-500 text-sm hover:underline"
+          >
+            <span className="font-medium">{blog.author.username}</span>
+          </Link>
         </div>
 
         {userId?.toString() === blog.author._id.toString() && (

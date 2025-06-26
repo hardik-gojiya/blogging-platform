@@ -65,9 +65,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path={`/blog/:id`} element={<SingleBlogPage />} />
-        <Route path={`/blog/:slug`} element={<SingleBlogPage />} />
-
+        <Route path="/blog/:identifier" element={<SingleBlogPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
