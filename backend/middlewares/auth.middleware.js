@@ -16,10 +16,26 @@ const AuthMiddleware = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    req.user = user; // Attach user to request object
-    next(); // Proceed to the next middleware or route handler
+    if (user.blocked) {
+      return res.status(403).json({ error: "Your account has been blocked" });
+    }
+
+    req.user = user;
+    next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
-export { AuthMiddleware };
+
+const isAdmin = async (req, res, next) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ error: "Access denied: Admins only" });
+    }
+    next();
+  } catch (err) {
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export { AuthMiddleware, isAdmin };

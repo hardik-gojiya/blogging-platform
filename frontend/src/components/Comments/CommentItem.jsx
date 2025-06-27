@@ -20,9 +20,11 @@ function CommentItem({
     <div className="mt-6">
       {/* Parent Comment */}
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-semibold text-white">
-          {comment.authorId?.username?.charAt(0)}
-        </div>
+        <img
+          src={comment?.authorId?.profilePic || "/profilepic.jpeg"}
+          className="w-10 h-10 rounded-full "
+        />
+
         <div className="bg-gray-100 p-3 rounded-lg w-full">
           <div className="flex items-center gap-2 ">
             <Link
@@ -84,14 +86,22 @@ function CommentItem({
             <div className="border-l-2 border-gray-300 pl-4 mt-3 space-y-3">
               {replies.map((reply) => (
                 <div key={reply._id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center font-semibold text-white">
-                    {reply.authorId?.username?.charAt(0)}
-                  </div>
+                  <img
+                    src={reply?.authorId?.profilePic || "/profilepic.jpeg"}
+                    className="w-10 h-10 rounded-full "
+                  />
                   <div className="bg-white p-3 rounded-lg shadow w-full">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-blue-700">
+                      <Link
+                        to={
+                          userId === reply.authorId?._id
+                            ? "/personal-profile"
+                            : `/profile/${reply.authorId?._id}`
+                        }
+                        className="font-semibold text-sm text-blue-700"
+                      >
                         {reply.authorId?.username || "User"}
-                      </span>
+                      </Link>
                       {reply.authorId?._id === blogAuthorId && (
                         <span className="text-xs bg-gray-700 text-white px-2 py-0.5 rounded-full">
                           Author

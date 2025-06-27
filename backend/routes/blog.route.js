@@ -10,11 +10,13 @@ import {
   getBlogById,
   getBlogBySlug,
   publishBlog,
+  gettotalBlogs,
 } from "../controllers/blog.controller.js";
-import { AuthMiddleware } from "../middlewares/auth.middleware.js";
+import { AuthMiddleware, isAdmin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
+router.get("/get-total-blogs", AuthMiddleware, isAdmin, gettotalBlogs);
 router.post("/createBlog", AuthMiddleware, createBlog);
 router.get("/getAllBlogs", getAllBugs);
 router.get("/getBlogById/:id", getBlogById);

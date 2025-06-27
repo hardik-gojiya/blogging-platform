@@ -15,22 +15,31 @@ export const AuthProvider = ({ children }) => {
   const [username, setuserName] = useState("");
   const [email, setEmail] = useState("");
   const [profilePic, setprofilePic] = useState("");
+  const [role, setRole] = useState("");
 
   const checkLoggedin = async () => {
     try {
       let res = await api.get("/auth/checkAuth");
       if (res.status === 200) {
+        if (res.data.blocked) {
+          showError("Your account is blocked.");
+          setIslogedin(false);
+          return;
+        }
+
         setIslogedin(true);
         setUserId(res.data.userId);
         setEmail(res.data.email);
         setuserName(res.data.username);
         setprofilePic(res.data.profilePic);
+        setRole(res.data.role);
       }
     } catch (error) {
       setIslogedin(false);
       setUserId("");
       setEmail("");
       setuserName("");
+      setRole("");
       console.log(error);
     }
   };
@@ -69,6 +78,7 @@ export const AuthProvider = ({ children }) => {
         email,
         handleLogOut,
         profilePic,
+        role,
       }}
     >
       {children}

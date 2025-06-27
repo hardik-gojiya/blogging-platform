@@ -1,6 +1,10 @@
 import { Comment } from "../models/comments.model.js";
 import { Blog } from "../models/blog.model.js";
 
+const gettotalComments = async (req, res) => {
+  return res.json({ totalComments: await Comment.countDocuments() });
+};
+
 const createComment = async (req, res) => {
   const { content } = req.body;
   const blogId = req.params.id;
@@ -112,7 +116,7 @@ const fetchCommentsByBlog = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate("repliedTo")
       .populate("blogId", "title slug _id")
-      .populate("authorId", "name email");
+      .populate("authorId", "name email profilePic");
     return res.status(200).json({ comments });
   } catch (error) {
     console.log(error);
@@ -120,4 +124,10 @@ const fetchCommentsByBlog = async (req, res) => {
   }
 };
 
-export { createComment, replyToComment, deleteComment, fetchCommentsByBlog };
+export {
+  gettotalComments,
+  createComment,
+  replyToComment,
+  deleteComment,
+  fetchCommentsByBlog,
+};

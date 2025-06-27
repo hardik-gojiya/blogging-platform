@@ -1,10 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { ChevronDown, LogOut, User, FileText } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  User,
+  FileText,
+  LayoutDashboard,
+} from "lucide-react";
 
 function Navbar() {
-  const { islogedin, username, handleLogOut, userId, profilePic } = useAuth();
+  const { islogedin, username, handleLogOut, userId, profilePic, role } =
+    useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -46,7 +53,7 @@ function Navbar() {
               >
                 <span className="text-sm font-medium">{username}</span>
                 <img
-                  src={profilePic}
+                  src={profilePic || "/profilepic.jpeg"}
                   className="bg-gray-900 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
                 />
               </button>
@@ -69,6 +76,18 @@ function Navbar() {
                     <FileText className="w-4 h-4" />
                     My Blogs
                   </Link>
+                  {role === "admin" && (
+                    <div>
+                      <Link
+                        to="/admin"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        Dahsboard
+                      </Link>
+                    </div>
+                  )}
                   <button
                     onClick={() => {
                       handleLogOut();

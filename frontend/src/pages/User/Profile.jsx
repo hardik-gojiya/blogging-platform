@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Pencil, Trash2, MessageSquare, ThumbsUp } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../hooks/useToast";
-import { api } from "../services/api";
-import { useBlog } from "../context/BlogContext";
+import { Pencil, Trash2, MessageSquare } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../hooks/useToast";
+import { api } from "../../services/api";
+import { useBlog } from "../../context/BlogContext";
+import ShowPic from "../../components/ShowPic";
 
 function Profile() {
   const { id: profileId } = useParams();
@@ -14,6 +15,9 @@ function Profile() {
 
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [loadingFollow, setLoadingFollow] = useState(false);
+  const [showPic, setShowPic] = useState("");
 
   const isOwnProfile = userId === profileId;
 
@@ -31,12 +35,37 @@ function Profile() {
       if (res.status === 200) {
         setBlogs(res.data.blogs);
         setUser(res.data.user);
+        if (res.data.user.followers?.includes(userId)) {
+          setIsFollowing(true);
+        } else {
+          setIsFollowing(false);
+        }
       }
     } catch (error) {
       console.error(error);
       setBlogs([]);
       setUser(null);
       showError("Something went wrong");
+    }
+  };
+
+  const handleToggleFollow = async () => {
+    try {
+      setLoadingFollow(true);
+      const res = await api.put(
+        `/user/toggle-follow-unfollow-user/${profileId}`,
+        {
+          currentUserId: userId,
+        }
+      );
+      if (res.status === 200) {
+        setIsFollowing((prev) => !prev);
+      }
+    } catch (error) {
+      console.error(error);
+      showError("Follow action failed");
+    } finally {
+      setLoadingFollow(false);
     }
   };
 
@@ -55,17 +84,41 @@ function Profile() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">Profile</h1>
-      <img
-        src={user?.ProfilePic}
-        className="rounded-full w-20 h-20 border-2 "
-      />
-      <p className="text-gray-600 mb-1">
-        Name: <span className="font-medium">{user?.username}</span>
-      </p>
-      <p className="text-gray-600 mb-4">
-        Email: <span className="font-medium">{user?.email}</span>
-      </p>
+      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+        <div className="flex items-center gap-4">
+          <img
+            src={user?.profilePic || "/profilepic.jpeg"}
+            alt="Profile"
+            onClick={() => setShowPic(user?.profilePic)}
+            className="rounded-full w-20 h-20 border-2 border-gray-300 shadow cursor-pointer hover:opacity-80 transition"
+          />
+          <div>
+            <p className="text-gray-700 text-lg">
+              Name: <span className="font-semibold">{user?.username}</span>
+            </p>
+            <p className="text-gray-600 text-sm">
+              Email: <span className="font-medium">{user?.email}</span>
+            </p>
+          </div>
+        </div>
+
+        {!isOwnProfile && (
+          <div>
+            <button
+              onClick={handleToggleFollow}
+              disabled={loadingFollow}
+              className={`px-4 py-2 rounded text-sm transition bg-gray-300`}
+            >
+              {loadingFollow
+                ? "Loading..."
+                : isFollowing
+                ? "Unfollow"
+                : "Follow"}
+            </button>
+          </div>
+        )}
+      </div>
+
       <hr className="mb-6" />
 
       <h2 className="text-2xl font-semibold text-gray-700 mb-4">
@@ -161,6 +214,7 @@ function Profile() {
           })}
         </div>
       )}
+      {showPic && <ShowPic url={showPic} onCancel={() => setShowPic("")} />}
     </div>
   );
 }

@@ -2,11 +2,10 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { User } from "../models/user.model.js";
 
-const generateToken = (id) => {
-  const token = jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (user) => {
+  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
-  return token;
 };
 
 const checkUserName = async (req, res) => {
@@ -50,7 +49,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: "error in register" });
     }
     await newUser.save();
-    const token = generateToken(newUser._id);
+    const token = generateToken(user);
 
     res.cookie("token", token, {
       maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
@@ -77,12 +76,15 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.status(400).json({ error: "user not found" });
     }
+    if (user.blocked) {
+      return res.status(403).json({ error: "Your account has been blocked" });
+    }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ error: "Invalid password" });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.cookie("token", token, {
       maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
@@ -132,6 +134,8 @@ const chechAuth = async (req, res) => {
     username: user.username,
     email: user.email,
     profilePic: user.profilePic,
+    role: user.role,
+    blocked: user.blocked,
   });
 };
 

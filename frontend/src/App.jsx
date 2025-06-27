@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import NotFound from "./components/NotFound";
-import Profile from "./pages/Profile";
 import ProtectedRoute from "./hooks/ProtectedRoute";
 import SingleBlogPage from "./pages/Blog/SingleBlogPage";
 import { Toaster } from "react-hot-toast";
@@ -13,6 +12,11 @@ import Register from "./pages/Auth/Register";
 import Login from "./pages/Auth/Login";
 import PersonalProfile from "./pages/User/PersonalProfile";
 import MyBlogs from "./pages/Blog/MyBlogs";
+import Profile from "./pages/User/Profile";
+import AdminLayout from "./admin/AdminLayout";
+import Dashboard from "./admin/Dashboard";
+import ManageBlogs from "./admin/ManageBlogs";
+import ManageUsers from "./admin/ManageUsers";
 
 function App() {
   return (
@@ -66,6 +70,13 @@ function App() {
           }
         />
         <Route path="/blog/:identifier" element={<SingleBlogPage />} />
+
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="blogs" element={<ManageBlogs />} />
+          <Route path="users" element={<ManageUsers />} />
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

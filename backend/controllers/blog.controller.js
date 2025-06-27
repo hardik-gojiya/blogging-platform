@@ -2,6 +2,10 @@ import { Blog } from "../models/blog.model.js";
 import { User } from "../models/user.model.js";
 import slugify from "slugify";
 
+const gettotalBlogs = async (req, res) => {
+  return res.json({ totalBlogs: await Blog.countDocuments() });
+};
+
 const createBlog = async (req, res) => {
   const { title, slug, content, tags, published } = req.body;
   const userId = req.user._id;
@@ -198,19 +202,19 @@ const getAllPublishBlogsOfOneUser = async (req, res) => {
     }
     let blogs = await Blog.find({ author: userid, published: true })
       .sort({ createdAt: -1 })
-      .populate("author", "email username profilePic")
+      .populate("author", "email username profilePic following followers")
       .populate({
         path: "comments",
         populate: [
           {
             path: "authorId",
-            select: "username email profilePic",
+            select: "username email profilePic following followers",
           },
           {
             path: "replies",
             populate: {
               path: "authorId",
-              select: "username email profilePic",
+              select: "username email profilePic following followers",
             },
           },
         ],
@@ -348,6 +352,7 @@ const editBlog = async (req, res) => {
 };
 
 export {
+  gettotalBlogs,
   createBlog,
   getAllBugs,
   getBlogById,

@@ -1,7 +1,14 @@
 import express from "express";
-import { AuthMiddleware } from "../middlewares/auth.middleware.js";
+import { AuthMiddleware, isAdmin } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { addProfilePic } from "../controllers/user.controller.js";
+import {
+  addProfilePic,
+  deleteProfilePic,
+  getAllusers,
+  toggleBlockUser,
+  togglefollowUser,
+  totalUsers,
+} from "../controllers/user.controller.js";
 
 const router = express.Router();
 
@@ -11,5 +18,15 @@ router.put(
   upload.single("profilepic"),
   addProfilePic
 );
+router.delete("/remove-profile-picture/:id", AuthMiddleware, deleteProfilePic);
+router.put(
+  "/toggle-follow-unfollow-user/:id",
+  AuthMiddleware,
+  togglefollowUser
+);
+
+router.get("/all-users", AuthMiddleware, isAdmin, getAllusers);
+router.put("/block-unblock/:id", AuthMiddleware, isAdmin, toggleBlockUser);
+router.get("/total-users", AuthMiddleware, isAdmin, totalUsers);
 
 export default router;
