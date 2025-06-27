@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
-import { connectDB } from "./db/db.js";
+import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -23,6 +23,9 @@ connectDB();
 
 import authRoutes from "./routes/auth.route.js";
 app.use("/api/v1/auth", authRoutes);
+
+import userRoutes from "./routes/user.route.js";
+app.use("/api/v1/user", userRoutes);
 
 import blogRoutes from "./routes/blog.route.js";
 app.use("/api/v1/blog", blogRoutes);

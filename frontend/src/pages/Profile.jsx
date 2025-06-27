@@ -40,13 +40,6 @@ function Profile() {
     }
   };
 
-  const handleLikeClick = async (id) => {
-    const updated = await handleLike(id);
-    if (updated) {
-      setBlogs((prev) => prev.map((b) => (b._id === id ? updated : b)));
-    }
-  };
-
   const stripHtml = (html) => html.replace(/<[^>]*>?/gm, "");
 
   if (!islogedin) {
@@ -63,6 +56,10 @@ function Profile() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-2">Profile</h1>
+      <img
+        src={user?.ProfilePic}
+        className="rounded-full w-20 h-20 border-2 "
+      />
       <p className="text-gray-600 mb-1">
         Name: <span className="font-medium">{user?.username}</span>
       </p>

@@ -3,9 +3,11 @@ import { api } from "../../services/api";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useToast } from "../../hooks/useToast";
+import { useAuth } from "../../context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
+  const {checkLoggedin} = useAuth()
   const { showSuccess, showError } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,7 +51,8 @@ function Register() {
         setName("");
         setEmail("");
         setPassword("");
-        navigate("/login");
+        await checkLoggedin();
+        navigate(-1 || "/");
       }
     } catch (error) {
       console.log(error);

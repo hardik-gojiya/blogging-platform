@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { ChevronDown, LogOut, User, FileText } from "lucide-react";
 
 function Navbar() {
-  const { islogedin, username, handleLogOut, userId } = useAuth();
+  const { islogedin, username, handleLogOut, userId, profilePic } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -39,15 +39,16 @@ function Navbar() {
         {/* Right Actions */}
         <div className="flex items-center space-x-4 " ref={dropdownRef}>
           {islogedin ? (
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative " ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full hover:bg-gray-200 transition"
+                className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full  cursor-pointer hover:bg-gray-200 transition"
               >
                 <span className="text-sm font-medium">{username}</span>
-                <div className="bg-gray-900 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                  {username?.charAt(0).toUpperCase()}
-                </div>
+                <img
+                  src={profilePic}
+                  className="bg-gray-900 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
+                />
               </button>
 
               {dropdownOpen && (

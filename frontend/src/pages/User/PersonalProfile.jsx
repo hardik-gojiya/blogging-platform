@@ -1,12 +1,44 @@
-import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useBlog } from "../../context/BlogContext";
 import BlogCard from "../Blog/BlogCard";
 import { Link } from "react-router-dom";
+import { Trash2, Upload, Eye } from "lucide-react";
+import { useRef } from "react";
+import { useToast } from "../../hooks/useToast";
+import { api } from "../../services/api";
 
 function PersonalProfile() {
-  const { islogedin, username, email, userId } = useAuth();
+  const { islogedin, username, email, userId, profilePic, checkLoggedin } =
+    useAuth();
   const { myBlogs } = useBlog();
+  const { showSuccess, showError, showConfirm } = useToast();
+  const fileInputRef = useRef();
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    showConfirm({
+      message: "Do you want to Change profile picture?",
+      onOk: async () => {
+        const formData = new FormData();
+        formData.set("profilepic", file);
+        if (file) {
+          try {
+            let res = await api.put(
+              `/user/update-profile-picture/${userId}`,
+              formData
+            );
+            if (res.status === 200) {
+              showSuccess(res.data?.message || "Picture updated successfully");
+              await checkLoggedin();
+            }
+          } catch (error) {
+            showError(error?.response?.data?.error || "Something went wrong");
+          }
+        }
+      },
+      onCancel: () => {},
+    });
+  };
 
   if (!islogedin) {
     return (
@@ -21,20 +53,71 @@ function PersonalProfile() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">Profile</h1>
-      <p className="text-gray-600 mb-1">
-        Name: <span className="font-medium">{username}</span>
-      </p>
-      <p className="text-gray-600 mb-4">
-        Email: <span className="font-medium">{email}</span>
-      </p>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Profile
+      </h1>
+
+      <div className="flex flex-col items-center gap-4 mb-6">
+        <img
+          src={profilePic}
+          alt="Profile"
+          className="w-28 h-28 rounded-full border-4 border-gray-300 object-cover shadow-md"
+        />
+
+        <div className="flex gap-4">
+          <button
+            className="p-2 bg-red-100 cursor-pointer hover:bg-red-200 rounded-full text-red-600"
+            title="Delete Image"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+
+          <button
+            onClick={() => fileInputRef.current.click()}
+            className="p-2 bg-blue-100 cursor-pointer hover:bg-blue-200 rounded-full text-blue-600"
+            title="Update Image"
+          >
+            <Upload className="w-5 h-5" />
+          </button>
+
+          {/* Hidden File Input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            className="hidden"
+          />
+
+          <a
+            href={profilePic}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 bg-green-100 cursor-pointer hover:bg-green-200 rounded-full text-green-600"
+            title="View Image"
+          >
+            <Eye className="w-5 h-5" />
+          </a>
+        </div>
+      </div>
+
+      <div className="text-center mb-6">
+        <p className="text-gray-700 text-lg">
+          <span className="font-semibold">Username:</span> {username}
+        </p>
+        <p className="text-gray-700 text-lg">
+          <span className="font-semibold">Email:</span> {email}
+        </p>
+      </div>
+
       <hr className="mb-6" />
 
-      <div className="flex justify-between">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-          Your Blogs
-        </h2>
-        <Link to={"/my-blogs"} className="  text-blue-500 underline mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold text-gray-700">Your Blogs</h2>
+        <Link
+          to="/my-blogs"
+          className="text-blue-600 font-medium hover:underline"
+        >
           See All
         </Link>
       </div>

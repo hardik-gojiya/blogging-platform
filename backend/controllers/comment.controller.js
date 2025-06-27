@@ -89,10 +89,15 @@ const deleteComment = async (req, res) => {
     }
     const blogId = commentref.blogId;
     await commentref.deleteOne();
-    await Blog.findByIdAndUpdate(blogId, {
+    const updateOps = {
       $pull: { comments: commentref._id },
-      $inc: { commentsCount: -1 },
-    });
+    };
+
+    if (!commentref.repliedTo) {
+      updateOps.$inc = { commentsCount: -1 };
+    }
+
+    await Blog.findByIdAndUpdate(blogId, updateOps);
     return res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
     console.log(error);

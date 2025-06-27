@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import CommentItem from "./CommentItem";
 
-function CommentList({ comments = [], blogAuthorId, onReplyClick }) {
+function CommentList({
+  comments = [],
+  blogAuthorId,
+  onReplyClick,
+  deleteComment,
+}) {
   const [visibleReplies, setVisibleReplies] = useState({});
 
   const toggleReplies = (id) => {
@@ -21,6 +26,7 @@ function CommentList({ comments = [], blogAuthorId, onReplyClick }) {
             onReplyClick={onReplyClick}
             showReplies={visibleReplies[comment._id]}
             toggleReplies={toggleReplies}
+            deleteComment={deleteComment}
           />
         ))
       )}

@@ -50,6 +50,13 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: "error in register" });
     }
     await newUser.save();
+    const token = generateToken(newUser._id);
+
+    res.cookie("token", token, {
+      maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
+      httpOnly: true,
+      secure: false,
+    });
 
     return res.status(201).json({ message: "register successfully" });
   } catch (error) {
@@ -124,6 +131,7 @@ const chechAuth = async (req, res) => {
     userId: user._id,
     username: user.username,
     email: user.email,
+    profilePic: user.profilePic,
   });
 };
 

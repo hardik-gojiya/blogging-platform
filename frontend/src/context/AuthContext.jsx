@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }) => {
   const [userId, setUserId] = useState("");
   const [username, setuserName] = useState("");
   const [email, setEmail] = useState("");
+  const [profilePic, setprofilePic] = useState("");
 
   const checkLoggedin = async () => {
     try {
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
         setUserId(res.data.userId);
         setEmail(res.data.email);
         setuserName(res.data.username);
+        setprofilePic(res.data.profilePic);
       }
     } catch (error) {
       setIslogedin(false);
@@ -66,6 +68,7 @@ export const AuthProvider = ({ children }) => {
         username,
         email,
         handleLogOut,
+        profilePic,
       }}
     >
       {children}

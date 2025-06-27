@@ -11,7 +11,7 @@ import ScrollToTop from "react-scroll-to-top";
 
 function SingleBlogPage() {
   const navigate = useNavigate();
-  const { showSuccess, showError } = useToast();
+  const { showSuccess, showError, showConfirm } = useToast();
   const { islogedin, userId } = useAuth();
   const { identifier } = useParams();
   const [blog, setBlog] = useState(null);
@@ -97,13 +97,35 @@ function SingleBlogPage() {
   const handleReplyClick = (id, name) => {
     setReplyingTo(id);
     setLocalComment(`@${name} `);
+    inputRef.current?.focus();
     setTimeout(() => {
       inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 100);
   };
 
+  const deleteComment = async (id) => {
+    showConfirm({
+      message: "Do you really want to delete this comment?",
+      onOk: async () => {
+        try {
+          let res = await api.delete(`/comment/delete-Comment/${id}`);
+          if (res.status === 200) {
+            showSuccess(res?.data?.message);
+            fetchBlog();
+          }
+        } catch (error) {
+          console.error(error);
+          showError(error?.response?.data?.error || "Something went wrong");
+        }
+      },
+      onCancel: () => {
+        showError("Cancelled");
+      },
+    });
+  };
+
   if (!blog) {
-    return <p className="text-center text-gray-500 py-10">Loading blog...</p>;
+    return <p className="text-center text-gray-500 py-10">Blog not found</p>;
   }
 
   return (
@@ -191,15 +213,15 @@ function SingleBlogPage() {
       {/* Meta */}
       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-8">
         <button
-          onClick={() => {
-            handleLike(blog._id);
+          onClick={async () => {
+            await handleLike(blog._id);
             fetchBlog();
           }}
           className="flex items-center gap-1 hover:text-blue-600 transition cursor-pointer"
         >
           <ThumbsUp
             className={`w-4 h-4 ${
-              blog.likes?.includes(userId) ? "fill-blue-600 text-blue-600" : ""
+              blog.likes?.includes(userId) ? "fill-gray-600 text-gray-600" : ""
             }`}
           />
           {blog.likesCount}
@@ -237,6 +259,7 @@ function SingleBlogPage() {
         comments={blog.comments}
         blogAuthorId={blog.author._id}
         onReplyClick={handleReplyClick}
+        deleteComment={deleteComment}
       />
 
       {/* Scroll to top */}

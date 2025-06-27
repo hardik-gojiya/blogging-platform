@@ -60,7 +60,7 @@ export const BlogProvider = ({ children }) => {
             showSuccess(res?.data?.message || "Deleted successfully");
             fetchMyBlogs();
             fetchAllBlogs();
-            navigate(-1);
+            navigate("/");
           }
         } catch (error) {
           console.error(error);

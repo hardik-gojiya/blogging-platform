@@ -24,7 +24,7 @@ function Login() {
         setIslogedin(true);
         setEmail("");
         setPassword("");
-        navigate("/");
+        navigate(-1 || "/");
         await checkLoggedin();
       }
     } catch (error) {

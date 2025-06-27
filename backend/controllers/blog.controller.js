@@ -62,19 +62,19 @@ const getAllBugs = async (req, res) => {
   try {
     let blogs = await Blog.find({ published: true })
       .sort({ createdAt: -1 })
-      .populate("author", "email username")
+      .populate("author", "email username profilePic")
       .populate({
         path: "comments",
         populate: [
           {
             path: "authorId",
-            select: "username email",
+            select: "username email profilePic",
           },
           {
             path: "replies",
             populate: {
               path: "authorId",
-              select: "username email",
+              select: "username email profilePic",
             },
           },
         ],
@@ -94,19 +94,19 @@ const getBlogById = async (req, res) => {
   const blogId = req.params.id;
   try {
     let blog = await Blog.findById(blogId)
-      .populate("author", "email username")
+      .populate("author", "email username profilePic")
       .populate({
         path: "comments",
         populate: [
           {
             path: "authorId",
-            select: "username email",
+            select: "username email profilePic",
           },
           {
             path: "replies",
             populate: {
               path: "authorId",
-              select: "username email",
+              select: "username email profilePic",
             },
           },
         ],
@@ -127,19 +127,19 @@ const getBlogBySlug = async (req, res) => {
   const slug = req.params.slug;
   try {
     let blog = await Blog.findOne({ slug })
-      .populate("author", "email username")
+      .populate("author", "email username profilePic")
       .populate({
         path: "comments",
         populate: [
           {
             path: "authorId",
-            select: "username email",
+            select: "username email profilePic",
           },
           {
             path: "replies",
             populate: {
               path: "authorId",
-              select: "username email",
+              select: "username email profilePic",
             },
           },
         ],
@@ -161,19 +161,19 @@ const getAllBlogsOfOneUser = async (req, res) => {
     let userid = req.params.id;
     let blogs = await Blog.find({ author: userid })
       .sort({ createdAt: -1 })
-      .populate("author", "email username")
+      .populate("author", "email username profilePic")
       .populate({
         path: "comments",
         populate: [
           {
             path: "authorId",
-            select: "username email",
+            select: "username email profilePic",
           },
           {
             path: "replies",
             populate: {
               path: "authorId",
-              select: "username email",
+              select: "username email profilePic",
             },
           },
         ],
@@ -198,19 +198,19 @@ const getAllPublishBlogsOfOneUser = async (req, res) => {
     }
     let blogs = await Blog.find({ author: userid, published: true })
       .sort({ createdAt: -1 })
-      .populate("author", "email username")
+      .populate("author", "email username profilePic")
       .populate({
         path: "comments",
         populate: [
           {
             path: "authorId",
-            select: "username email",
+            select: "username email profilePic",
           },
           {
             path: "replies",
             populate: {
               path: "authorId",
-              select: "username email",
+              select: "username email profilePic",
             },
           },
         ],
