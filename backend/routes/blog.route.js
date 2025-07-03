@@ -22,7 +22,10 @@ router.get("/getAllBlogs", getAllBugs);
 router.get("/getBlogById/:id", getBlogById);
 router.get("/getBlogBySlug/:slug", getBlogBySlug);
 router.get("/getAllBlogsofOneUser/:id", AuthMiddleware, getAllBlogsOfOneUser);
-router.get("/getAllPublishBlogsOfOneUser/:id", getAllPublishBlogsOfOneUser);
+router.get(
+  "/getAllPublishBlogsOfOneUser/:username",
+  getAllPublishBlogsOfOneUser
+);
 router.put("/publishBlog/:id", AuthMiddleware, publishBlog);
 router.delete("/deleteBlog/:id", AuthMiddleware, deleteBlog);
 router.put("/editBlog/:id", AuthMiddleware, editBlog);

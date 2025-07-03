@@ -195,12 +195,15 @@ const getAllBlogsOfOneUser = async (req, res) => {
 
 const getAllPublishBlogsOfOneUser = async (req, res) => {
   try {
-    let userid = req.params.id;
-    let user = await User.findById(userid);
+    let username = req.params.username;
+    let user = await User.findOne({ username: username })
+      .select("username email profilePic followers following")
+      .populate("followers", "username email profilePic")
+      .populate("following", "username email profilePic");
     if (!user) {
       return res.status(404).json({ error: "user not found" });
     }
-    let blogs = await Blog.find({ author: userid, published: true })
+    let blogs = await Blog.find({ author: user._id, published: true })
       .sort({ createdAt: -1 })
       .populate("author", "email username profilePic following followers")
       .populate({

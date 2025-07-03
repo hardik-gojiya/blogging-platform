@@ -17,6 +17,7 @@ import AdminLayout from "./admin/AdminLayout";
 import Dashboard from "./admin/Dashboard";
 import ManageBlogs from "./admin/ManageBlogs";
 import ManageUsers from "./admin/ManageUsers";
+import Setting from "./pages/User/Setting";
 
 function App() {
   return (
@@ -45,10 +46,18 @@ function App() {
           }
         />
         <Route
-          path="/profile/:id"
+          path="/profile/:username"
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/settings"
+          element={
+            <ProtectedRoute>
+              <Setting />
             </ProtectedRoute>
           }
         />
@@ -69,6 +78,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route path="/blog/:identifier" element={<SingleBlogPage />} />
 
         <Route path="/admin" element={<AdminLayout />}>

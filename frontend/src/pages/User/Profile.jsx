@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Pencil, Trash2, MessageSquare } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../hooks/useToast";
@@ -8,34 +8,33 @@ import { useBlog } from "../../context/BlogContext";
 import ShowPic from "../../components/ShowPic";
 
 function Profile() {
-  const { id: profileId } = useParams();
+  const navigate = useNavigate();
+  const { username: username } = useParams();
   const { showError } = useToast();
-  const { islogedin, userId } = useAuth();
+  const { islogedin, userId, username: ownusername } = useAuth();
   const { handleLike, deleteBlog, handlePublishBlog } = useBlog();
 
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [loadingFollow, setLoadingFollow] = useState(false);
   const [showPic, setShowPic] = useState("");
+  const [showListType, setShowListType] = useState("");
 
-  const isOwnProfile = userId === profileId;
-
-  useEffect(() => {
-    if (profileId) {
-      fetchUser();
-    }
-  }, [profileId]);
+  const isOwnProfile = ownusername === username;
 
   const fetchUser = async () => {
     try {
       const res = await api.get(
-        `/blog/getAllPublishBlogsOfOneUser/${profileId}`
+        `/blog/getAllPublishBlogsOfOneUser/${username}`
       );
       if (res.status === 200) {
         setBlogs(res.data.blogs);
         setUser(res.data.user);
-        if (res.data.user.followers?.includes(userId)) {
+        if (
+          res.data.user.followers?.some(
+            (f) => f._id?.toString() === userId?.toString()
+          )
+        ) {
           setIsFollowing(true);
         } else {
           setIsFollowing(false);
@@ -51,9 +50,8 @@ function Profile() {
 
   const handleToggleFollow = async () => {
     try {
-      setLoadingFollow(true);
       const res = await api.put(
-        `/user/toggle-follow-unfollow-user/${profileId}`,
+        `/user/toggle-follow-unfollow-user/${user._id}`,
         {
           currentUserId: userId,
         }
@@ -65,9 +63,15 @@ function Profile() {
       console.error(error);
       showError("Follow action failed");
     } finally {
-      setLoadingFollow(false);
+      fetchUser();
     }
   };
+
+  useEffect(() => {
+    if (username) {
+      fetchUser();
+    }
+  }, [username]);
 
   const stripHtml = (html) => html.replace(/<[^>]*>?/gm, "");
 
@@ -84,36 +88,48 @@ function Profile() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-        <div className="flex items-center gap-4">
+      {/* Profile Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-6">
+        <div className="flex items-center gap-6 flex-wrap">
           <img
             src={user?.profilePic || "/profilepic.jpeg"}
             alt="Profile"
             onClick={() => setShowPic(user?.profilePic)}
             className="rounded-full w-20 h-20 border-2 border-gray-300 shadow cursor-pointer hover:opacity-80 transition"
           />
-          <div>
+          <div className="space-y-1">
             <p className="text-gray-700 text-lg">
               Name: <span className="font-semibold">{user?.username}</span>
             </p>
             <p className="text-gray-600 text-sm">
               Email: <span className="font-medium">{user?.email}</span>
             </p>
+            <div className="flex gap-4 text-gray-700 text-lg">
+              <p
+                className="cursor-pointer hover:underline"
+                onClick={() => setShowListType("followers")}
+              >
+                <span className="font-semibold">{user?.followers?.length}</span>{" "}
+                Followers
+              </p>
+              <p
+                className="cursor-pointer hover:underline"
+                onClick={() => setShowListType("following")}
+              >
+                <span className="font-semibold">{user?.following?.length}</span>{" "}
+                Following
+              </p>
+            </div>
           </div>
         </div>
 
         {!isOwnProfile && (
-          <div>
+          <div className="sm:mt-0 mt-2">
             <button
               onClick={handleToggleFollow}
-              disabled={loadingFollow}
-              className={`px-4 py-2 rounded text-sm transition bg-gray-300`}
+              className="px-5 py-2 rounded bg-gray-300 hover:bg-gray-400 text-sm transition"
             >
-              {loadingFollow
-                ? "Loading..."
-                : isFollowing
-                ? "Unfollow"
-                : "Follow"}
+              {isFollowing ? "Unfollow" : "Follow"}
             </button>
           </div>
         )}
@@ -121,6 +137,7 @@ function Profile() {
 
       <hr className="mb-6" />
 
+      {/* Published Blogs Section */}
       <h2 className="text-2xl font-semibold text-gray-700 mb-4">
         Published Blogs
       </h2>
@@ -136,21 +153,21 @@ function Profile() {
             return (
               <div
                 key={blog._id}
-                className="bg-white shadow-md rounded-xl p-6 mb-6 border border-gray-200 hover:shadow-lg transition"
+                className="bg-white shadow-md rounded-xl p-6 border border-gray-200 hover:shadow-lg transition"
               >
-                <div className="flex justify-between">
+                <div className="flex justify-between items-start">
                   <Link
                     to={`/blog/${blog._id}`}
-                    className="text-2xl font-semibold text-gray-800 mb-2 hover:underline"
+                    className="text-2xl font-semibold text-gray-800 hover:underline"
                   >
                     {blog.title}
                   </Link>
-                  <span className="font-semibold text-gray-400 mb-2">
+                  <span className="font-semibold text-gray-400 text-sm">
                     {blog.author.username}
                   </span>
                 </div>
 
-                <p className="text-gray-700 mb-3 break-words whitespace-pre-wrap">
+                <p className="text-gray-700 mt-2 mb-3 whitespace-pre-wrap">
                   {preview}
                   {plainText.length > 200 && (
                     <Link
@@ -215,6 +232,62 @@ function Profile() {
         </div>
       )}
       {showPic && <ShowPic url={showPic} onCancel={() => setShowPic("")} />}
+      {showListType && (
+        <>
+          <div
+            onClick={() => setShowListType("")}
+            className="fixed inset-0 z-30 backdrop-blur-md"
+          />
+
+          <div className="absolute top-36 left-1/2 -translate-x-1/2 z-40 bg-white rounded-xl shadow-lg w-[90vw] sm:w-80 max-h-[70vh] overflow-y-auto p-4 border transition-all duration-200 ease-in-out transform scale-95">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-lg font-semibold capitalize">
+                {showListType}
+              </h2>
+              <button
+                onClick={() => setShowListType("")}
+                className="text-gray-500 hover:text-red-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {user?.[showListType]?.length === 0 ? (
+              <p className="text-gray-500 text-sm text-center">
+                No {showListType} found.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {user[showListType].map((person) => (
+                  <li key={person._id} className="flex items-center gap-3">
+                    <img
+                      src={person.profilePic}
+                      alt={person.username}
+                      className="w-10 h-10 rounded-full object-cover border"
+                    />
+                    <div>
+                      <p
+                        onClick={() => {
+                          navigate(
+                            person._id === userId
+                              ? "/personal-profile"
+                              : `/profile/${person.username}`
+                          );
+                          setShowListType("");
+                        }}
+                        className="font-medium hover:underline cursor-pointer"
+                      >
+                        {person.username}
+                      </p>
+                      <p className="text-sm text-gray-500">{person.email}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

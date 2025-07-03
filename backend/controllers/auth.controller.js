@@ -124,7 +124,10 @@ const chechAuth = async (req, res) => {
     return res.status(404).json({ error: "Token not Found" });
   }
 
-  let user = await User.findOne({ _id: decodedToken.id }).select("-password");
+  let user = await User.findOne({ _id: decodedToken.id })
+    .select("-password")
+    .populate("followers", "username email profilePic")
+    .populate("following", "username email profilePic");
   if (!user) {
     return res.status(404).json({ error: "user not found" });
   }
@@ -136,6 +139,8 @@ const chechAuth = async (req, res) => {
     profilePic: user.profilePic,
     role: user.role,
     blocked: user.blocked,
+    followers: user.followers,
+    following: user.following,
   });
 };
 

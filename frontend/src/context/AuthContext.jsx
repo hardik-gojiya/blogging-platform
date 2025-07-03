@@ -16,6 +16,8 @@ export const AuthProvider = ({ children }) => {
   const [email, setEmail] = useState("");
   const [profilePic, setprofilePic] = useState("");
   const [role, setRole] = useState("");
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
 
   const checkLoggedin = async () => {
     try {
@@ -33,6 +35,8 @@ export const AuthProvider = ({ children }) => {
         setuserName(res.data.username);
         setprofilePic(res.data.profilePic);
         setRole(res.data.role);
+        setFollowers(res.data.followers || []);
+        setFollowing(res.data.following || []);
       }
     } catch (error) {
       setIslogedin(false);
@@ -40,6 +44,8 @@ export const AuthProvider = ({ children }) => {
       setEmail("");
       setuserName("");
       setRole("");
+      setFollowers([]);
+      setFollowing([]);
       console.log(error);
     }
   };
@@ -79,6 +85,8 @@ export const AuthProvider = ({ children }) => {
         handleLogOut,
         profilePic,
         role,
+        followers,
+        following,
       }}
     >
       {children}

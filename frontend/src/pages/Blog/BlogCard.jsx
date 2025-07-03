@@ -29,7 +29,7 @@ function BlogCard({ blog }) {
           to={
             userId === blog.author._id
               ? "/personal-profile"
-              : `/profile/${blog.author._id}`
+              : `/profile/${blog.author.username}`
           }
           className="font-semibold text-gray-400 mb-2 hover:underline"
         >
