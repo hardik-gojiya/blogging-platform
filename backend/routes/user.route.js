@@ -7,6 +7,7 @@ import {
   getAllusers,
   toggleBlockUser,
   togglefollowUser,
+  toggleNotificationSetting,
   totalUsers,
 } from "../controllers/user.controller.js";
 
@@ -27,6 +28,11 @@ router.put(
 
 router.get("/all-users", AuthMiddleware, isAdmin, getAllusers);
 router.put("/block-unblock/:id", AuthMiddleware, isAdmin, toggleBlockUser);
+router.put(
+  "/send-notification-toggle/:id",
+  AuthMiddleware,
+  toggleNotificationSetting
+);
 router.get("/total-users", AuthMiddleware, isAdmin, totalUsers);
 
 export default router;

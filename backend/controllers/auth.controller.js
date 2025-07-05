@@ -141,6 +141,7 @@ const chechAuth = async (req, res) => {
     blocked: user.blocked,
     followers: user.followers,
     following: user.following,
+    allowNotification: user.allowNotification,
   });
 };
 

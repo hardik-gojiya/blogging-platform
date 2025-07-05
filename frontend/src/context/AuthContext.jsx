@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState("");
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
+  const [allowedNotification, setAllowedNotification] = useState(null);
 
   const checkLoggedin = async () => {
     try {
@@ -37,6 +38,8 @@ export const AuthProvider = ({ children }) => {
         setRole(res.data.role);
         setFollowers(res.data.followers || []);
         setFollowing(res.data.following || []);
+        setAllowedNotification(res.data.allowNotification);
+        console.log(allowedNotification);
       }
     } catch (error) {
       setIslogedin(false);
@@ -87,6 +90,7 @@ export const AuthProvider = ({ children }) => {
         role,
         followers,
         following,
+        allowedNotification,
       }}
     >
       {children}

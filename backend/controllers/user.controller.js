@@ -151,6 +151,25 @@ const totalUsers = async (req, res) => {
   return res.json({ totalUsers: await User.countDocuments() });
 };
 
+const toggleNotificationSetting = async (req, res) => {
+  const userid = req.params.id;
+
+  try {
+    let user = await User.findById(userid);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    user.allowNotification = !user.allowNotification;
+    await user.save();
+    return res
+      .status(200)
+      .json({ message: "Status Updated", status: user.allowNotification });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export {
   addProfilePic,
   deleteProfilePic,
@@ -159,4 +178,5 @@ export {
   getAllusers,
   toggleBlockUser,
   totalUsers,
+  toggleNotificationSetting,
 };
