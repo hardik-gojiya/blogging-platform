@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import { Blog } from "../models/blog.model.js";
 import {
   deletFromCloudinary,
   uploadOnCloudinary,
@@ -170,6 +171,35 @@ const toggleNotificationSetting = async (req, res) => {
   }
 };
 
+const deleteUserAndBlogs = async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    await Blog.deleteMany({ author: userId });
+
+    await User.findByIdAndDelete(userId);
+
+    await User.updateMany(
+      { followers: userId },
+      { $pull: { followers: userId } }
+    );
+    await User.updateMany(
+      { following: userId },
+      { $pull: { following: userId } }
+    );
+
+    return res.status(200).json({ message: "User and all blogs deleted" });
+  } catch (err) {
+    console.error("Error deleting user and blogs:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const fetchSavedBlogs = async (req, res) => {};
+
 export {
   addProfilePic,
   deleteProfilePic,
@@ -179,4 +209,6 @@ export {
   toggleBlockUser,
   totalUsers,
   toggleNotificationSetting,
+  deleteUserAndBlogs,
+  fetchSavedBlogs,
 };

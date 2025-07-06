@@ -4,6 +4,8 @@ import { upload } from "../middlewares/multer.middleware.js";
 import {
   addProfilePic,
   deleteProfilePic,
+  deleteUserAndBlogs,
+  fetchSavedBlogs,
   getAllusers,
   toggleBlockUser,
   togglefollowUser,
@@ -34,5 +36,7 @@ router.put(
   toggleNotificationSetting
 );
 router.get("/total-users", AuthMiddleware, isAdmin, totalUsers);
+router.delete("/delet-profile", AuthMiddleware, deleteUserAndBlogs);
+router.get("/saved-blogs/:id", AuthMiddleware, fetchSavedBlogs);
 
 export default router;

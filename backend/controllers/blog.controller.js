@@ -1,9 +1,81 @@
 import { Blog } from "../models/blog.model.js";
 import { User } from "../models/user.model.js";
 import slugify from "slugify";
+import { sendMail } from "../utils/sendMail.util.js";
 
 const gettotalBlogs = async (req, res) => {
   return res.json({ totalBlogs: await Blog.countDocuments() });
+};
+
+const sendMailOfBlog = async (user, blog) => {
+  const followers = user.followers || [];
+
+  for (let follower of followers) {
+    let sendinfo = await sendMail({
+      to: follower.email,
+      subject: `${user.username} posted new Blog!`,
+      html: `
+          <div style="font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; padding: 30px;">
+  <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    
+    <div style="background-color: #4f46e5; color: white; padding: 20px 30px;">
+      <h2 style="margin: 0;"> New Blog by ${user.username}</h2>
+    </div>
+
+    <div style="padding: 20px 30px;">
+      <h3 style="color: #333; font-size: 22px; margin-bottom: 10px;">${
+        blog.title
+      }</h3>
+
+      <p style="color: #555; font-size: 16px; line-height: 1.6;">
+        ${blog.content.slice(0, 200)}...
+      </p>
+
+      <div style="margin-top: 20px; text-align: center;">
+        <a href="#" style="display: inline-block; background-color: #4f46e5; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold; transition: background 0.3s;">
+           Read Full Blog
+        </a>
+      </div>
+    </div>
+
+    <div style="padding: 16px 30px; background-color: #f9f9f9; color: #999; font-size: 13px; text-align: center;">
+      You’re receiving this email because you follow <strong>{{authorName}}</strong>.
+      <br />
+      <a href="#" style="color: #4f46e5;">Manage Notification Settings</a>
+    </div>
+  </div>
+</div>
+
+          `,
+    });
+  }
+};
+
+const generateUniqueSlug = async (title, slug, tags) => {
+  let baseSlug = slugify(slug || title, { lower: true, strict: true });
+  let trySlug = baseSlug;
+
+  for (let i = 0; i < tags.length; i++) {
+    const tempSlug = `${baseSlug}-${slugify(tags[i], {
+      lower: true,
+      strict: true,
+    })}`;
+    if (!(await Blog.findOne({ slug: tempSlug }))) {
+      trySlug = tempSlug;
+      break;
+    }
+  }
+
+  if (await Blog.findOne({ slug: trySlug })) {
+    let count = 1;
+    let numberedSlug = trySlug;
+    while (await Blog.findOne({ slug: numberedSlug })) {
+      numberedSlug = `${trySlug}-${count++}`;
+    }
+    trySlug = numberedSlug;
+  }
+
+  return trySlug;
 };
 
 const createBlog = async (req, res) => {
@@ -15,30 +87,16 @@ const createBlog = async (req, res) => {
   }
 
   try {
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate({
+        path: "followers",
+        match: { allowNotification: true },
+        select: "email username",
+      });
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    let baseSlug = slugify(slug || title, { lower: true, strict: true });
-    let trySlug = baseSlug;
-
-    let tempSlug = baseSlug;
-    for (let i = 0; i < tags.length; i++) {
-      tempSlug += `-${slugify(tags[i], { lower: true, strict: true })}`;
-      const exists = await Blog.findOne({ slug: tempSlug });
-      if (!exists) {
-        trySlug = tempSlug;
-        break;
-      }
-    }
-
-    if (await Blog.findOne({ slug: trySlug })) {
-      let count = 1;
-      let numberedSlug = trySlug;
-      while (await Blog.findOne({ slug: numberedSlug })) {
-        numberedSlug = `${trySlug}-${count++}`;
-      }
-      trySlug = numberedSlug;
-    }
+    const trySlug = await generateUniqueSlug(title, slug, tags);
 
     const blog = new Blog({
       title,
@@ -51,11 +109,17 @@ const createBlog = async (req, res) => {
 
     await blog.save();
 
-    return res.status(201).json({
+    res.status(201).json({
       message: "Blog created successfully",
       slug: trySlug,
       blog,
     });
+    if (!published) {
+      return;
+    }
+    setTimeout(async () => {
+      sendMailOfBlog(user, blog);
+    }, 0);
   } catch (err) {
     console.error("Error in creating blog:", err);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -237,6 +301,13 @@ const publishBlog = async (req, res) => {
   let blogId = req.params.id;
   try {
     let userid = req.user._id;
+    const user = await User.findById(userid)
+      .select("-password")
+      .populate({
+        path: "followers",
+        match: { allowNotification: true },
+        select: "email username",
+      });
     let blog = await Blog.findOne({ _id: blogId, author: userid });
     if (!blog) {
       return res.status(404).json({ error: "blog not found" });
@@ -247,7 +318,8 @@ const publishBlog = async (req, res) => {
     blog.published = true;
     await blog.save();
 
-    return res.status(200).json({ blog, message: "blog is published" });
+    res.status(200).json({ blog, message: "blog is published" });
+    sendMailOfBlog(user, blog);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -354,6 +426,9 @@ const editBlog = async (req, res) => {
   }
 };
 
+const saveBlog = async (req, res) => {};
+const removeSaveBlog = async (req, res) => {};
+
 export {
   gettotalBlogs,
   createBlog,
@@ -366,4 +441,6 @@ export {
   deleteBlog,
   addOrRemoveLike,
   editBlog,
+  saveBlog,
+  removeSaveBlog,
 };

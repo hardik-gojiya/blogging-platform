@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../services/api.js";
 import { useToast } from "../hooks/useToast.jsx";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -9,6 +10,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const { showSuccess, showError, showConfirm } = useToast();
   const [islogedin, setIslogedin] = useState(false);
   const [userId, setUserId] = useState("");
@@ -19,6 +21,7 @@ export const AuthProvider = ({ children }) => {
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [allowedNotification, setAllowedNotification] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const checkLoggedin = async () => {
     try {
@@ -39,7 +42,6 @@ export const AuthProvider = ({ children }) => {
         setFollowers(res.data.followers || []);
         setFollowing(res.data.following || []);
         setAllowedNotification(res.data.allowNotification);
-        console.log(allowedNotification);
       }
     } catch (error) {
       setIslogedin(false);
@@ -49,7 +51,8 @@ export const AuthProvider = ({ children }) => {
       setRole("");
       setFollowers([]);
       setFollowing([]);
-      console.log(error);
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -64,6 +67,8 @@ export const AuthProvider = ({ children }) => {
           setUserId(null);
           setEmail("");
           setuserName("");
+          checkLoggedin();
+          navigate("/");
         } catch (error) {
           showError(error?.response?.data?.error || "error in logout");
         }
@@ -74,7 +79,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkLoggedin();
-  }, [islogedin]);
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -91,6 +96,7 @@ export const AuthProvider = ({ children }) => {
         followers,
         following,
         allowedNotification,
+        authLoading,
       }}
     >
       {children}

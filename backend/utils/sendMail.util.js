@@ -9,3 +9,12 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
+
+export const sendMail = async ({ to, subject, html }) => {
+  return await transporter.sendMail({
+    from: `"Writely"- <info@writely.com>`,
+    to,
+    subject,
+    html,
+  });
+};

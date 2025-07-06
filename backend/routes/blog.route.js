@@ -11,6 +11,9 @@ import {
   getBlogBySlug,
   publishBlog,
   gettotalBlogs,
+  saveBlog,
+  deleteSaveBlog,
+  removeSaveBlog,
 } from "../controllers/blog.controller.js";
 import { AuthMiddleware, isAdmin } from "../middlewares/auth.middleware.js";
 
@@ -30,5 +33,7 @@ router.put("/publishBlog/:id", AuthMiddleware, publishBlog);
 router.delete("/deleteBlog/:id", AuthMiddleware, deleteBlog);
 router.put("/editBlog/:id", AuthMiddleware, editBlog);
 router.post("/like-unlikeBlog/:id", AuthMiddleware, addOrRemoveLike);
+router.put("/save-blog/:id", AuthMiddleware, saveBlog);
+router.delete("/remove-saved-blog/:id", AuthMiddleware, removeSaveBlog);
 
 export default router;

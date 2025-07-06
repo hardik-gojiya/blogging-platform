@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { User } from "../models/user.model.js";
 
 const generateToken = (user) => {
-  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user?._id, role: user?.role }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
 };
@@ -49,7 +49,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: "error in register" });
     }
     await newUser.save();
-    const token = generateToken(user);
+    const token = generateToken(newUser);
 
     res.cookie("token", token, {
       maxAge: 30 * 24 * 60 * 60 * 1000, //30 days
