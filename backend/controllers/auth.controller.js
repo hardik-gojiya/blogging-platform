@@ -136,12 +136,14 @@ const chechAuth = async (req, res) => {
     userId: user._id,
     username: user.username,
     email: user.email,
+    bio: user.bio,
     profilePic: user.profilePic,
     role: user.role,
     blocked: user.blocked,
     followers: user.followers,
     following: user.following,
     allowNotification: user.allowNotification,
+    savedBlogs: user.savedBlogs,
   });
 };
 

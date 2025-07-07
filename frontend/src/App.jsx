@@ -22,6 +22,7 @@ import AdminLayout from "./admin/AdminLayout";
 import Dashboard from "./admin/Dashboard";
 import ManageBlogs from "./admin/ManageBlogs";
 import ManageUsers from "./admin/ManageUsers";
+import SavedBlogs from "./pages/Blog/SavedBlogs";
 
 function App() {
   return (
@@ -29,12 +30,12 @@ function App() {
       <Toaster position="top-right" reverseOrder={false} />
 
       <Routes>
-        {/* Public routes without Navbar */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
         {/* Routes with Navbar via Layout */}
         <Route element={<Layout />}>
+          {/* Public routes without Navbar */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
           <Route path="/" element={<Home />} />
           <Route path="/blog/:identifier" element={<SingleBlogPage />} />
 
@@ -79,6 +80,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyBlogs />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/saved-blogs"
+            element={
+              <ProtectedRoute>
+                <SavedBlogs />
               </ProtectedRoute>
             }
           />

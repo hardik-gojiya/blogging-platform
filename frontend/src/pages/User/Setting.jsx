@@ -33,7 +33,7 @@ function Setting() {
       message: "Do you really want to delete this blog?",
       onOk: async () => {
         try {
-          const res = await api.delete(`/user/delet-profile`);
+          const res = await api.delete(`/user/delete-profile`);
           if (res.status === 200) {
             showSuccess(res?.data?.message || "Deleted successfully");
             navigate("/");
@@ -115,12 +115,12 @@ function Setting() {
       </div> */}
 
       {/* Edit Profile */}
-      <div className="mb-6 flex items-center gap-2 text-blue-600 hover:underline cursor-pointer">
+      {/* <div className="mb-6 flex items-center gap-2 text-blue-600 hover:underline cursor-pointer">
         <UserCog className="w-5 h-5" />
         <button onClick={() => navigate("/personal-profile/edit")}>
           Edit Profile Information
         </button>
-      </div>
+      </div> */}
 
       {/* Danger Zone */}
       <div className="mt-8 border-t pt-4">

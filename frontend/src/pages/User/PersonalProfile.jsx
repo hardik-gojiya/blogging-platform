@@ -2,8 +2,15 @@ import { useAuth } from "../../context/AuthContext";
 import { useBlog } from "../../context/BlogContext";
 import BlogCard from "../Blog/BlogCard";
 import { Link } from "react-router-dom";
-import { Trash2, Upload, Eye, Settings } from "lucide-react";
-import { useRef } from "react";
+import {
+  Trash2,
+  Upload,
+  Eye,
+  Settings,
+  BookmarkCheck,
+  Pencil,
+} from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useToast } from "../../hooks/useToast";
 import { api } from "../../services/api";
 import { useState } from "react";
@@ -20,6 +27,7 @@ function PersonalProfile() {
     checkLoggedin,
     followers,
     following,
+    user,
   } = useAuth();
   const { myBlogs } = useBlog();
   const { showSuccess, showError, showConfirm } = useToast();
@@ -27,6 +35,13 @@ function PersonalProfile() {
   const [loading, setLoading] = useState(false);
   const [showPic, setShowPic] = useState("");
   const [showListType, setShowListType] = useState("");
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [bio, setBio] = useState("");
+  useEffect(() => {
+    if (islogedin) {
+      setBio(user?.bio || "");
+    }
+  }, [user]);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -92,6 +107,17 @@ function PersonalProfile() {
     }
   };
 
+  const handleBioUpdate = async () => {
+    try {
+      const res = await api.put("/user/edit-bio", { bio });
+      showSuccess(res.data?.message || "Bio updated successfully");
+      await checkLoggedin();
+      setIsEditingBio(false);
+    } catch (error) {
+      showError(error?.response?.data?.error || "Failed to update bio");
+    }
+  };
+
   if (!islogedin) {
     return (
       <div className="text-center text-red-500 text-lg font-semibold mt-10">
@@ -106,15 +132,24 @@ function PersonalProfile() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <Loader loading={loading} />
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end gap-2 mb-4">
+        <Link
+          to="/saved-blogs"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200  rounded-lg shadow-sm transition text-sm"
+          title="Saved Blogs"
+        >
+          <BookmarkCheck className="w-5 h-5" />
+        </Link>
+
         <Link
           to="/profile/settings"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200  rounded-lg shadow-sm transition text-sm"
           title="Settings"
         >
           <Settings className="w-5 h-5" />
         </Link>
       </div>
+
       <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
         Profile
       </h1>
@@ -163,6 +198,46 @@ function PersonalProfile() {
           Username: <span className="font-medium">{username}</span>
         </p>
         <p className="text-md text-gray-600">Email: {email}</p>
+        <div className="flex justify-center items-center gap-2 mt-1">
+          {isEditingBio ? (
+            <>
+              <input
+                type="text"
+                className="border px-3 py-1 text-sm rounded w-full max-w-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+              />
+              <button
+                onClick={handleBioUpdate}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => {
+                  setIsEditingBio(false);
+                  setBio(user?.bio || "");
+                }}
+                className="text-sm text-gray-500 hover:text-red-500"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-600 max-w-xl text-center">
+                {bio || "No bio added."}
+              </p>
+              <button
+                onClick={() => setIsEditingBio(true)}
+                className="text-gray-400 hover:text-blue-600"
+                title="Edit Bio"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex justify-center gap-6 text-gray-700 text-lg mb-8">

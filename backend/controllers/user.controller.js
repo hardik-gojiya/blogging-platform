@@ -5,6 +5,49 @@ import {
   uploadOnCloudinary,
 } from "../utils/cloudinary.util.js";
 
+const editUserProfile = async (req, res) => {
+  const userId = req.user._id;
+  const { username, email, bio } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (bio !== undefined) user.bio = bio;
+
+    await user.save();
+
+    res.status(200).json({ message: "Profile updated successfully", user });
+  } catch (err) {
+    console.error("Profile update error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const editBio = async (req, res) => {
+  const userId = req.user._id;
+  const { bio } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.bio = bio || user.bio;
+
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "Profile updated successfully", bio: user.bio });
+  } catch (err) {
+    console.error("Error updating profile:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const addProfilePic = async (req, res) => {
   const profilepic = req.file?.path;
   const paramsid = req.params.id;
@@ -198,7 +241,52 @@ const deleteUserAndBlogs = async (req, res) => {
   }
 };
 
-const fetchSavedBlogs = async (req, res) => {};
+const fetchSavedBlogs = async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId).populate({
+      path: "savedBlogs",
+      populate: {
+        path: "author",
+        select: "username profilePic",
+      },
+    });
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.status(200).json({ savedBlogs: user.savedBlogs });
+  } catch (error) {
+    console.error("Error fetching saved blogs:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getPopularUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+      .sort({ followers: -1 }) // this doesn't work as expected since it's an array
+      .lean();
+
+    // manually sort based on followers length
+    const sorted = users
+      .map((user) => ({
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePic: user.profilePic,
+        followers: user.followers || [],
+        followersCount: user.followers?.length || 0,
+      }))
+      .sort((a, b) => b.followersCount - a.followersCount)
+      .slice(0, 5); // limit to top 5
+
+    res.status(200).json({ users: sorted });
+  } catch (error) {
+    console.error("Error fetching popular users", error);
+    res.status(500).json({ error: "Failed to fetch popular users" });
+  }
+};
 
 export {
   addProfilePic,
@@ -211,4 +299,7 @@ export {
   toggleNotificationSetting,
   deleteUserAndBlogs,
   fetchSavedBlogs,
+  getPopularUsers,
+  editUserProfile,
+  editBio,
 };

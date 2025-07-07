@@ -195,7 +195,7 @@ const getBlogBySlug = async (req, res) => {
   const slug = req.params.slug;
   try {
     let blog = await Blog.findOne({ slug })
-      .populate("author", "email username profilePic")
+      .populate("author", "email username profilePic bio")
       .populate({
         path: "comments",
         populate: [
@@ -426,8 +426,51 @@ const editBlog = async (req, res) => {
   }
 };
 
-const saveBlog = async (req, res) => {};
-const removeSaveBlog = async (req, res) => {};
+const saveBlog = async (req, res) => {
+  const userId = req.user._id;
+  const blogId = req.params.id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (user.savedBlogs.includes(blogId)) {
+      return res.status(400).json({ message: "Blog already saved" });
+    }
+
+    user.savedBlogs.push(blogId);
+    await user.save();
+
+    res.status(200).json({
+      message: "Blog saved successfully",
+      savedBlogs: user.savedBlogs,
+    });
+  } catch (error) {
+    console.error("Error saving blog:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const removeSaveBlog = async (req, res) => {
+  const userId = req.user._id;
+  const blogId = req.params.id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.savedBlogs = user.savedBlogs.filter((id) => id.toString() !== blogId);
+    await user.save();
+
+    res.status(200).json({
+      message: "Blog removed from saved",
+      savedBlogs: user.savedBlogs,
+    });
+  } catch (error) {
+    console.error("Error removing saved blog:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 export {
   gettotalBlogs,

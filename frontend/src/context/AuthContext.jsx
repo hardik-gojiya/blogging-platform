@@ -12,6 +12,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const { showSuccess, showError, showConfirm } = useToast();
+  const [user, setUser] = useState(null);
   const [islogedin, setIslogedin] = useState(false);
   const [userId, setUserId] = useState("");
   const [username, setuserName] = useState("");
@@ -34,6 +35,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         setIslogedin(true);
+        setUser(res.data);
         setUserId(res.data.userId);
         setEmail(res.data.email);
         setuserName(res.data.username);
@@ -84,6 +86,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider
       value={{
+        user,
         userId,
         checkLoggedin,
         islogedin,

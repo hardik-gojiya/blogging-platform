@@ -1,13 +1,38 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import { api } from "../../services/api";
 import LikesButton from "../../components/LikesButton";
-import { MessageSquare, Pencil, Trash2 } from "lucide-react";
+import { MessageSquare, Pencil, Trash2, Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useBlog } from "../../context/BlogContext";
+import { useToast } from "../../hooks/useToast";
 
 function BlogCard({ blog }) {
-  const { userId } = useAuth();
+  const { userId, user } = useAuth();
   const { deleteBlog, handlePublishBlog } = useBlog();
+  const { showError } = useToast();
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (userId && blog) {
+      setIsSaved(blog._id && user?.savedBlogs?.includes(blog._id));
+    }
+  }, [blog, user]);
+
+  const handleToggleSave = async () => {
+    try {
+      if (isSaved) {
+        await api.delete(`/blog/remove-saved-blog/${blog._id}`);
+      } else {
+        await api.put(`/blog/save-blog/${blog._id}`);
+      }
+      setIsSaved((prev) => !prev);
+    } catch (err) {
+      console.log(err);
+      showError("Action failed");
+    }
+  };
+
   const stripHtmlTags = (html) => {
     return html.replace(/<[^>]*>?/gm, "");
   };
@@ -69,6 +94,18 @@ function BlogCard({ blog }) {
           </Link>
           {blog.commentsCount}
         </div>
+
+        <button
+          onClick={handleToggleSave}
+          className="flex items-center gap-1 hover:text-blue-600 transition cursor-pointer"
+        >
+          <Bookmark
+            className={`w-4 h-4 ${
+              isSaved ? "fill-gray-600 text-gray-600" : "text-gray-500"
+            }`}
+          />
+          <span className="text-sm">{isSaved ? "Saved" : "Save"}</span>
+        </button>
 
         {userId?.toString() === blog?.author?._id.toString() && (
           <div className="flex items-center gap-2 ml-auto">

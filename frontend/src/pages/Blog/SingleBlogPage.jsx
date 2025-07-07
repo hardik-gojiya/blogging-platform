@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ThumbsUp, MessageSquare, Pencil, Trash2 } from "lucide-react";
+import {
+  ThumbsUp,
+  MessageSquare,
+  Pencil,
+  Trash2,
+  Bookmark,
+} from "lucide-react";
 import { api } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useBlog } from "../../context/BlogContext";
@@ -12,13 +18,14 @@ import ScrollToTop from "react-scroll-to-top";
 function SingleBlogPage() {
   const navigate = useNavigate();
   const { showSuccess, showError, showConfirm } = useToast();
-  const { islogedin, userId } = useAuth();
+  const { islogedin, userId, user } = useAuth();
   const { identifier } = useParams();
   const [blog, setBlog] = useState(null);
   const [localComment, setLocalComment] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [showFullContent, setShowFullContent] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const contentRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -122,6 +129,28 @@ function SingleBlogPage() {
         showError("Cancelled");
       },
     });
+  };
+
+  useEffect(() => {
+    if (userId && blog) {
+      setIsSaved(blog._id && user?.savedBlogs?.includes(blog._id));
+    }
+  }, [userId, blog, user]);
+
+  const handleToggleSave = async () => {
+    if (!islogedin) return navigate("/login");
+
+    try {
+      if (isSaved) {
+        await api.delete(`/blog/remove-saved-blog/${blog._id}`);
+      } else {
+        await api.put(`/blog/save-blog/${blog._id}`);
+      }
+      setIsSaved(!isSaved);
+    } catch (err) {
+      console.log(err);
+      showError("Action failed");
+    }
   };
 
   if (!blog) {
@@ -230,6 +259,18 @@ function SingleBlogPage() {
           <MessageSquare className="w-4 h-4" />
           {blog.commentsCount}
         </div>
+        <button
+          onClick={handleToggleSave}
+          className="flex items-center gap-1 hover:text-blue-600 transition cursor-pointer"
+        >
+          <Bookmark
+            className={`w-4 h-4 ${
+              isSaved ? "fill-gray-600 text-gray-600" : "text-gray-500"
+            }`}
+          />
+          <span className="text-sm">{isSaved ? "Saved" : "Save"}</span>
+        </button>
+
         <p className="text-xs text-gray-400 ml-auto">
           Created: {new Date(blog.createdAt).toLocaleString()}
         </p>
@@ -261,6 +302,34 @@ function SingleBlogPage() {
         onReplyClick={handleReplyClick}
         deleteComment={deleteComment}
       />
+      {/* Author Info */}
+      <div className="mt-12 border-t pt-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Author</h3>
+        <div className="flex items-center gap-4">
+          <img
+            src={blog.author.profilePic || "/profilepic.jpeg"}
+            alt={blog.author.username}
+            className="w-14 h-14 rounded-full object-cover border"
+          />
+          <div>
+            <Link
+              to={
+                userId === blog.author._id
+                  ? "/personal-profile"
+                  : `/profile/${blog.author.username}`
+              }
+              className="text-md font-semibold text-gray-900 hover:underline"
+            >
+              {blog.author.username}
+            </Link>
+            {blog.author.bio && (
+              <p className="text-sm text-gray-600 mt-1 max-w-md">
+                {blog.author.bio}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Scroll to top */}
       <ScrollToTop

@@ -5,8 +5,11 @@ import {
   addProfilePic,
   deleteProfilePic,
   deleteUserAndBlogs,
+  editBio,
+  editUserProfile,
   fetchSavedBlogs,
   getAllusers,
+  getPopularUsers,
   toggleBlockUser,
   togglefollowUser,
   toggleNotificationSetting,
@@ -14,6 +17,9 @@ import {
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
+
+router.put("/edit-profile", AuthMiddleware, editUserProfile);
+router.put("/edit-bio", AuthMiddleware, editBio);
 
 router.put(
   "/update-profile-picture/:id",
@@ -36,7 +42,9 @@ router.put(
   toggleNotificationSetting
 );
 router.get("/total-users", AuthMiddleware, isAdmin, totalUsers);
-router.delete("/delet-profile", AuthMiddleware, deleteUserAndBlogs);
-router.get("/saved-blogs/:id", AuthMiddleware, fetchSavedBlogs);
+router.delete("/delete-profile", AuthMiddleware, deleteUserAndBlogs);
+router.get("/get-saved-blogs", AuthMiddleware, fetchSavedBlogs);
+
+router.get("/popular", getPopularUsers);
 
 export default router;

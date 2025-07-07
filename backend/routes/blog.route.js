@@ -12,7 +12,6 @@ import {
   publishBlog,
   gettotalBlogs,
   saveBlog,
-  deleteSaveBlog,
   removeSaveBlog,
 } from "../controllers/blog.controller.js";
 import { AuthMiddleware, isAdmin } from "../middlewares/auth.middleware.js";

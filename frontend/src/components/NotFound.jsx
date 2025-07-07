@@ -12,10 +12,10 @@ function NotFound() {
         Sorry, the page you’re looking for doesn’t exist or has been moved.
       </p>
       <Link
-        to="/"
+        to={-1}
         className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
       >
-        Go Back Home
+        Go Back
       </Link>
     </div>
   );

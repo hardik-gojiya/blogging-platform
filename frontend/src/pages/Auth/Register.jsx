@@ -1,20 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { api } from "../../services/api";
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect } from "react";
 import { useToast } from "../../hooks/useToast";
 import { useAuth } from "../../context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
-  const {checkLoggedin} = useAuth()
+  const { checkLoggedin } = useAuth();
   const { showSuccess, showError } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isUserNameValid, setIsUserNameValid] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(null);
 
-  const checkUsernameValid = async () => {
+  const checkUsernameValid = async (name) => {
     try {
       let res = await api.post(`/auth/check-user-name`, { name });
       if (res.status === 200) {
@@ -28,16 +28,40 @@ function Register() {
       }
     }
   };
-  useEffect(() => {
-    if (name) {
-      checkUsernameValid();
+
+  const validateEmail = async (email) => {
+    try {
+      const res = await api.post("/auth/validate-email", { email });
+      if (res.status === 200) {
+        setIsEmailValid(true);
+      }
+    } catch (error) {
+      setIsEmailValid(false);
     }
+  };
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (name) checkUsernameValid(name);
+    }, 400);
+    return () => clearTimeout(delayDebounce);
   }, [name]);
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (email) validateEmail(email);
+    }, 400);
+    return () => clearTimeout(delayDebounce);
+  }, [email]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!isUserNameValid) {
       showError("Enter valid username");
+      return;
+    }
+    if (!isEmailValid) {
+      showError("Enter a valid email address");
       return;
     }
     try {
@@ -104,6 +128,23 @@ function Register() {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
+            {email && (
+              <p
+                className={`text-sm mt-1 ${
+                  isEmailValid === null
+                    ? "text-gray-500"
+                    : isEmailValid
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {isEmailValid === null
+                  ? "Checking email..."
+                  : isEmailValid
+                  ? "Email is valid"
+                  : "Email is invalid or already in use"}
+              </p>
+            )}
           </div>
 
           <div>

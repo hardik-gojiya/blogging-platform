@@ -5,12 +5,9 @@ import Navbar from "./Navbar";
 function Layout() {
   const location = useLocation();
 
-  const hideNavbarRoutes = ["/login", "/register"];
-  const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
-
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] transition-colors duration-300">
-      {!shouldHideNavbar && <Navbar />}
+      {<Navbar />}
       <main className="pt-4 px-4">
         <Outlet />
       </main>
