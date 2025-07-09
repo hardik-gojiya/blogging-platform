@@ -2,6 +2,7 @@ import express from "express";
 import {
   chechAuth,
   checkUserName,
+  googleLoginUser,
   loginUser,
   logOutUser,
   registerUser,
@@ -10,6 +11,7 @@ import {
 const router = express.Router();
 
 router.post("/register", registerUser);
+router.post("/google", googleLoginUser);
 router.post("/check-user-name", checkUserName);
 router.post("/login", loginUser);
 router.post("/logout", logOutUser);

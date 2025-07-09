@@ -1,12 +1,23 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { User } from "../models/user.model.js";
+import admin from "../utils/firebaseAdmin.js";
 
 const generateToken = (user) => {
   return jwt.sign({ id: user?._id, role: user?.role }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
 };
+function generateRandomPassword(length = 8) {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * chars.length);
+    password += chars[randomIndex];
+  }
+  return password;
+}
 
 const checkUserName = async (req, res) => {
   const { name } = req.body;
@@ -147,4 +158,62 @@ const chechAuth = async (req, res) => {
   });
 };
 
-export { checkUserName, registerUser, loginUser, logOutUser, chechAuth };
+const googleLoginUser = async (req, res) => {
+  const { token: tokenId } = req.body;
+
+  if (!tokenId) {
+    return res.status(400).json({ message: "No token provided" });
+  }
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(tokenId);
+    const { email, picture } = decodedToken;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const password = generateRandomPassword();
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const baseUsername = email.split("@")[0].toLowerCase();
+      let username = baseUsername;
+      let count = 1;
+
+      while (await User.findOne({ username })) {
+        username = `${baseUsername}${count}`;
+        count++;
+      }
+
+      user = await User.create({
+        email,
+        username,
+        profilePic: picture,
+        password: hashedPassword,
+      });
+    }
+
+    const token = generateToken(user);
+
+    res.cookie("token", token, {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      secure: false,
+    });
+
+    return res.status(200).json({
+      message: "Login successful",
+    });
+  } catch (error) {
+    console.error("Google login error", error);
+    res.status(401).json({ message: "Invalid Firebase token" });
+  }
+};
+
+export {
+  checkUserName,
+  registerUser,
+  loginUser,
+  logOutUser,
+  chechAuth,
+  googleLoginUser,
+};

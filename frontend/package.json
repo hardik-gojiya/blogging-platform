@@ -16,6 +16,7 @@
     "@syncfusion/ej2-react-richtexteditor": "^29.2.11",
     "@tailwindcss/vite": "^4.1.10",
     "axios": "^1.10.0",
+    "firebase": "^11.6.1",
     "lucide-react": "^0.516.0",
     "quill": "^2.0.3",
     "react": "^18.3.1",

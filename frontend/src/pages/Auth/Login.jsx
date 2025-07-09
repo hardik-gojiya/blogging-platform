@@ -3,6 +3,7 @@ import { api } from "../../services/api";
 import { Navigate, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../hooks/useToast";
+import GoogleLoginElement from "./GoogleLoginElement";
 
 function Login() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ function Login() {
   };
 
   if (islogedin) {
-    return <Navigate to="/" />;
+    return <Navigate to="-1" />;
   }
 
   return (
@@ -88,6 +89,7 @@ function Login() {
             Register
           </Link>
         </p>
+        <GoogleLoginElement />
       </div>
     </div>
   );

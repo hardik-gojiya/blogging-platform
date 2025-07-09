@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../services/api";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { useToast } from "../../hooks/useToast";
 import { useAuth } from "../../context/AuthContext";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../../hooks/firebase";
+import GoogleLoginElement from "./GoogleLoginElement";
 
 function Register() {
   const navigate = useNavigate();
@@ -83,6 +86,10 @@ function Register() {
       showError(error?.response?.data?.error || "Error in registration");
     }
   };
+
+  if (islogedin) {
+    return <Navigate to="-1" />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-white px-4">
@@ -169,7 +176,7 @@ function Register() {
           </button>
         </form>
 
-        <p className="text-sm text-center text-gray-600 mt-6">
+        <p className="text-sm text-center text-gray-600 mt-6 mb-3">
           Already have an account?{" "}
           <Link
             to="/login"
@@ -178,6 +185,7 @@ function Register() {
             Login
           </Link>
         </p>
+        <GoogleLoginElement />
       </div>
     </div>
   );
