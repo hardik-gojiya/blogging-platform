@@ -39,7 +39,9 @@ const sendMailOfBlog = async (user, blog) => {
     </div>
 
     <div style="padding: 16px 30px; background-color: #f9f9f9; color: #999; font-size: 13px; text-align: center;">
-      You’re receiving this email because you follow <strong>{{authorName}}</strong>.
+      You’re receiving this email because you follow <strong>${
+        user.username
+      }</strong>.
       <br />
       <a href="#" style="color: #4f46e5;">Manage Notification Settings</a>
     </div>
