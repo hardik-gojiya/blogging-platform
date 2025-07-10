@@ -14,6 +14,7 @@ import CommentList from "../../components/Comments/CommentList";
 import CommentInput from "../../components/Comments/CommentInput";
 import { useToast } from "../../hooks/useToast";
 import ScrollToTop from "react-scroll-to-top";
+import TextToSpeech from "../../components/TextToSpeech";
 
 function SingleBlogPage() {
   const navigate = useNavigate();
@@ -205,9 +206,9 @@ function SingleBlogPage() {
           </div>
         )}
       </div>
-
+      <TextToSpeech html={blog.content} />
       {/* Content */}
-      <div
+      {/* <div
         ref={contentRef}
         className={`mb-4 transition-all duration-300 ${
           showFullContent ? "" : "max-h-[300px] overflow-hidden"
@@ -216,7 +217,7 @@ function SingleBlogPage() {
         <div className="prose max-w-none text-gray-800 break-words whitespace-pre-wrap overflow-x-auto p-2 bg-white rounded-md">
           <div dangerouslySetInnerHTML={{ __html: blog.content }} />
         </div>
-      </div>
+      </div> */}
 
       {isOverflowing && (
         <button

@@ -8,4 +8,11 @@ export default defineConfig({
   server: {
     historyApiFallback: true, // important
   },
+  theme: {
+    extend: {
+      fontFamily: {
+        segoe: ['"Segoe UI"', "system-ui", "sans-serif"],
+      },
+    },
+  },
 });
