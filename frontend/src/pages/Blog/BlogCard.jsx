@@ -43,10 +43,10 @@ function BlogCard({ blog }) {
       key={blog._id}
       className="bg-white shadow-md rounded-xl p-6 mb-6 border border-gray-200 hover:shadow-lg transition"
     >
-      <div className="flex justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <Link
           to={`/blog/${blog.slug}`}
-          className="text-2xl font-semibold text-gray-800 mb-2 hover:underline"
+          className="text-xl sm:text-2xl font-semibold text-gray-800 hover:underline break-words"
         >
           {blog.title}
         </Link>
@@ -56,13 +56,13 @@ function BlogCard({ blog }) {
               ? "/personal-profile"
               : `/profile/${blog.author.username}`
           }
-          className="font-semibold text-gray-400 mb-2 hover:underline"
+          className="text-sm sm:text-base font-medium text-gray-500 hover:underline break-all text-right"
         >
-          {blog.author.username}
+          @{blog.author.username}
         </Link>
       </div>
 
-      <p className="text-gray-700 mb-3 break-words whitespace-pre-wrap">
+      <p className="text-gray-700 mt-3 mb-3 break-words whitespace-pre-wrap">
         {preview}
         {plainText.length > 200 && (
           <Link
@@ -85,15 +85,16 @@ function BlogCard({ blog }) {
         ))}
       </ul>
 
-      <div className="flex items-center gap-4 text-gray-600 text-sm flex-wrap">
+      <div className="flex flex-wrap items-center gap-4 text-gray-600 text-sm">
         <LikesButton blog={blog} />
 
-        <div className="flex items-center gap-1 hover:text-blue-600 cursor-pointer">
-          <Link to={`/blog/${blog._id}#comments`}>
-            <MessageSquare className="w-4 h-4" />
-          </Link>
+        <Link
+          to={`/blog/${blog._id}#comments`}
+          className="flex items-center gap-1 hover:text-blue-600"
+        >
+          <MessageSquare className="w-4 h-4" />
           {blog.commentsCount}
-        </div>
+        </Link>
 
         <button
           onClick={handleToggleSave}
@@ -108,10 +109,8 @@ function BlogCard({ blog }) {
         </button>
 
         {userId?.toString() === blog?.author?._id.toString() && (
-          <div className="flex items-center gap-2 ml-auto">
-            {blog.published ? (
-              ""
-            ) : (
+          <div className="flex flex-wrap gap-2 ml-auto mt-2 sm:mt-0">
+            {!blog.published && (
               <button
                 onClick={() => handlePublishBlog(blog._id)}
                 disabled={blog.published}

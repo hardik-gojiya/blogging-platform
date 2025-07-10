@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import { useBlog } from "../context/BlogContext";
-import { useAuth } from "../context/AuthContext";
 import BlogCard from "./Blog/BlogCard";
 import { Link } from "react-router-dom";
 

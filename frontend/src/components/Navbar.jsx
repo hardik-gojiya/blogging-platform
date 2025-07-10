@@ -54,6 +54,7 @@ function Navbar() {
                 <span className="text-sm font-medium">{username}</span>
                 <img
                   src={profilePic || "/profilepic.jpeg"}
+                  alt=""
                   className="bg-gray-900 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
                 />
               </button>
