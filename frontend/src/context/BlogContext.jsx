@@ -28,6 +28,7 @@ export const BlogProvider = ({ children }) => {
       setMyblogs([]);
       showError("somthing went wrong");
     }
+    return allBlogs;
   };
 
   const fetchAllBlogs = async () => {
@@ -44,7 +45,7 @@ export const BlogProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchAllBlogs();
+    // fetchAllBlogs();
     if (userId) {
       fetchMyBlogs();
     }

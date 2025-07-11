@@ -160,6 +160,49 @@ const getAllBugs = async (req, res) => {
   }
 };
 
+const fetchBlogByPageNumber = async (req, res) => {
+  const pageNo = parseInt(req.params.page) || 1;
+  const limit = 10;
+  const skip = (pageNo - 1) * limit;
+
+  try {
+    const blogs = await Blog.find({ published: true })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("author", "email username profilePic")
+      .populate({
+        path: "comments",
+        populate: [
+          {
+            path: "authorId",
+            select: "username email profilePic",
+          },
+          {
+            path: "replies",
+            populate: {
+              path: "authorId",
+              select: "username email profilePic",
+            },
+          },
+        ],
+      })
+      .lean();
+
+    const totalBlogs = await Blog.countDocuments({ published: true });
+
+    return res.status(200).json({
+      blogs,
+      currentPage: pageNo,
+      totalBlogs,
+      totalPages: Math.ceil(totalBlogs / limit),
+    });
+  } catch (error) {
+    console.error("Error fetching paginated blogs:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const getBlogById = async (req, res) => {
   const blogId = req.params.id;
   try {
@@ -488,4 +531,5 @@ export {
   editBlog,
   saveBlog,
   removeSaveBlog,
+  fetchBlogByPageNumber,
 };

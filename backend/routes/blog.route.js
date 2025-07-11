@@ -13,6 +13,7 @@ import {
   gettotalBlogs,
   saveBlog,
   removeSaveBlog,
+  fetchBlogByPageNumber,
 } from "../controllers/blog.controller.js";
 import { AuthMiddleware, isAdmin } from "../middlewares/auth.middleware.js";
 
@@ -21,6 +22,7 @@ const router = express.Router();
 router.get("/get-total-blogs", AuthMiddleware, isAdmin, gettotalBlogs);
 router.post("/createBlog", AuthMiddleware, createBlog);
 router.get("/getAllBlogs", getAllBugs);
+router.get("/getBlogsByPage/:page", fetchBlogByPageNumber);
 router.get("/getBlogById/:id", getBlogById);
 router.get("/getBlogBySlug/:slug", getBlogBySlug);
 router.get("/getAllBlogsofOneUser/:id", AuthMiddleware, getAllBlogsOfOneUser);

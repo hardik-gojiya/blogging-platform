@@ -37,6 +37,7 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           <Route path="/" element={<Home />} />
+          <Route path="/page/:page" element={<Home />} />
           <Route path="/blog/:identifier" element={<SingleBlogPage />} />
 
           <Route
@@ -77,6 +78,14 @@ function App() {
 
           <Route
             path="/my-blogs"
+            element={
+              <ProtectedRoute>
+                <MyBlogs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-blogs/page/:page"
             element={
               <ProtectedRoute>
                 <MyBlogs />

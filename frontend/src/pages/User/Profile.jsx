@@ -6,10 +6,11 @@ import { useToast } from "../../hooks/useToast";
 import { api } from "../../services/api";
 import { useBlog } from "../../context/BlogContext";
 import ShowPic from "../../components/ShowPic";
+import Pagination from "../../components/Pagination"; // ✅ import
 
 function Profile() {
   const navigate = useNavigate();
-  const { username: username } = useParams();
+  const { username } = useParams();
   const { showError } = useToast();
   const { islogedin, userId, username: ownusername } = useAuth();
   const { handleLike, deleteBlog, handlePublishBlog } = useBlog();
@@ -19,6 +20,9 @@ function Profile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [showPic, setShowPic] = useState("");
   const [showListType, setShowListType] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 10;
 
   const isOwnProfile = ownusername === username;
 
@@ -30,15 +34,11 @@ function Profile() {
       if (res.status === 200) {
         setBlogs(res.data.blogs);
         setUser(res.data.user);
-        if (
-          res.data.user.followers?.some(
-            (f) => f._id?.toString() === userId?.toString()
-          )
-        ) {
-          setIsFollowing(true);
-        } else {
-          setIsFollowing(false);
-        }
+        setCurrentPage(1); // reset on profile change
+        const isFollowing = res.data.user.followers?.some(
+          (f) => f._id?.toString() === userId?.toString()
+        );
+        setIsFollowing(isFollowing);
       }
     } catch (error) {
       console.error(error);
@@ -85,6 +85,12 @@ function Profile() {
       </div>
     );
   }
+
+  // 🔁 Pagination logic
+  const indexOfLast = currentPage * blogsPerPage;
+  const indexOfFirst = indexOfLast - blogsPerPage;
+  const currentBlogs = blogs.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(blogs.length / blogsPerPage);
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -145,92 +151,106 @@ function Profile() {
       {blogs.length === 0 ? (
         <p className="text-gray-500">Blogs not found.</p>
       ) : (
-        <div className="space-y-6">
-          {blogs.map((blog) => {
-            const plainText = stripHtml(blog.content);
-            const preview = plainText.slice(0, 200);
+        <>
+          <div className="space-y-6">
+            {currentBlogs.map((blog) => {
+              const plainText = stripHtml(blog.content);
+              const preview = plainText.slice(0, 200);
 
-            return (
-              <div
-                key={blog._id}
-                className="bg-white shadow-md rounded-xl p-6 border border-gray-200 hover:shadow-lg transition"
-              >
-                <div className="flex justify-between items-start">
-                  <Link
-                    to={`/blog/${blog._id}`}
-                    className="text-2xl font-semibold text-gray-800 hover:underline"
-                  >
-                    {blog.title}
-                  </Link>
-                  <span className="font-semibold text-gray-400 text-sm">
-                    {blog.author.username}
-                  </span>
-                </div>
-
-                <p className="text-gray-700 mt-2 mb-3 whitespace-pre-wrap">
-                  {preview}
-                  {plainText.length > 200 && (
+              return (
+                <div
+                  key={blog._id}
+                  className="bg-white shadow-md rounded-xl p-6 border border-gray-200 hover:shadow-lg transition"
+                >
+                  <div className="flex justify-between items-start">
                     <Link
                       to={`/blog/${blog._id}`}
-                      className="text-blue-600 hover:underline ml-2 text-sm"
+                      className="text-2xl font-semibold text-gray-800 hover:underline"
                     >
-                      Show more
+                      {blog.title}
                     </Link>
-                  )}
-                </p>
-
-                <ul className="flex flex-wrap gap-2 text-sm text-blue-600 mb-4">
-                  {blog.tags.map((tag, idx) => (
-                    <li
-                      key={idx}
-                      className="bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition cursor-pointer"
-                    >
-                      #{tag}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="flex items-center gap-4 text-gray-600 text-sm flex-wrap">
-                  <div className="flex items-center gap-1 hover:text-blue-600 cursor-pointer">
-                    <Link to={`/blog/${blog._id}#comments`}>
-                      <MessageSquare className="w-4 h-4" />
-                    </Link>
-                    {blog.commentsCount}
+                    <span className="font-semibold text-gray-400 text-sm">
+                      {blog.author.username}
+                    </span>
                   </div>
 
-                  {isOwnProfile && (
-                    <div className="flex items-center gap-2 ml-auto">
-                      {!blog.published && (
-                        <button
-                          onClick={() => handlePublishBlog(blog._id)}
-                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm rounded"
-                        >
-                          Publish
-                        </button>
-                      )}
-
+                  <p className="text-gray-700 mt-2 mb-3 whitespace-pre-wrap">
+                    {preview}
+                    {plainText.length > 200 && (
                       <Link
-                        to={`/edit-Blog/${blog._id}`}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm rounded flex items-center gap-1"
+                        to={`/blog/${blog._id}`}
+                        className="text-blue-600 hover:underline ml-2 text-sm"
                       >
-                        <Pencil className="w-4 h-4" />
-                        Edit
+                        Show more
                       </Link>
-                      <button
-                        onClick={() => deleteBlog(blog._id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 text-sm rounded flex items-center gap-1"
+                    )}
+                  </p>
+
+                  <ul className="flex flex-wrap gap-2 text-sm text-blue-600 mb-4">
+                    {blog.tags.map((tag, idx) => (
+                      <li
+                        key={idx}
+                        className="bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition cursor-pointer"
                       >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
-                      </button>
+                        #{tag}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="flex items-center gap-4 text-gray-600 text-sm flex-wrap">
+                    <div className="flex items-center gap-1 hover:text-blue-600 cursor-pointer">
+                      <Link to={`/blog/${blog._id}#comments`}>
+                        <MessageSquare className="w-4 h-4" />
+                      </Link>
+                      {blog.commentsCount}
                     </div>
-                  )}
+
+                    {isOwnProfile && (
+                      <div className="flex items-center gap-2 ml-auto">
+                        {!blog.published && (
+                          <button
+                            onClick={() => handlePublishBlog(blog._id)}
+                            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 text-sm rounded"
+                          >
+                            Publish
+                          </button>
+                        )}
+                        <Link
+                          to={`/edit-Blog/${blog._id}`}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm rounded flex items-center gap-1"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => deleteBlog(blog._id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 text-sm rounded flex items-center gap-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+
+          {/* Pagination Component */}
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 0 });
+            }}
+            totalCount={blogs.length}
+            currentCount={blogsPerPage}
+          />
+        </>
       )}
+
       {showPic && <ShowPic url={showPic} onCancel={() => setShowPic("")} />}
       {showListType && (
         <>

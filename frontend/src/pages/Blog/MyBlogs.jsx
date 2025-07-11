@@ -4,12 +4,15 @@ import { useBlog } from "../../context/BlogContext";
 import { Link } from "react-router-dom";
 import BlogCard from "./BlogCard";
 import { BookmarkCheck } from "lucide-react";
+import Pagination from "../../components/Pagination"; // Make sure path is correct
 
 function MyBlogs() {
   const { islogedin } = useAuth();
   const { myBlogs } = useBlog();
 
   const [filter, setFilter] = useState("all"); // all | published | draft
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 10;
 
   if (!islogedin) {
     return (
@@ -22,11 +25,22 @@ function MyBlogs() {
     );
   }
 
+  // Filtered blogs
   const filteredBlogs = myBlogs.filter((blog) => {
     if (filter === "published") return blog.published === true;
     if (filter === "draft") return blog.published === false;
     return true;
   });
+
+  // Paginated blogs
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0 });
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
@@ -34,37 +48,22 @@ function MyBlogs() {
         <h2 className="text-2xl font-semibold text-gray-700">Your Blogs</h2>
 
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-3 py-1 rounded-full text-sm ${
-              filter === "all"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter("published")}
-            className={`px-3 py-1 rounded-full text-sm ${
-              filter === "published"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            Published
-          </button>
-          <button
-            title="Draft"
-            onClick={() => setFilter("draft")}
-            className={`px-3 py-1 rounded-full text-sm ${
-              filter === "draft"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            Draft
-          </button>
+          {["all", "published", "draft"].map((type) => (
+            <button
+              key={type}
+              onClick={() => {
+                setFilter(type);
+                setCurrentPage(1); // Reset to page 1 on filter change
+              }}
+              className={`px-3 py-1 rounded-full text-sm ${
+                filter === type
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </button>
+          ))}
         </div>
 
         <Link
@@ -76,14 +75,25 @@ function MyBlogs() {
         </Link>
       </div>
 
-      {filteredBlogs.length === 0 ? (
+      {currentBlogs.length === 0 ? (
         <p className="text-gray-500">No blogs found for this filter.</p>
       ) : (
-        <div className="space-y-6">
-          {filteredBlogs.map((blog) => (
-            <BlogCard key={blog._id} blog={blog} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-6">
+            {currentBlogs.map((blog) => (
+              <BlogCard key={blog._id} blog={blog} />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          <Pagination
+            totalPages={Math.ceil(filteredBlogs.length / blogsPerPage)}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            currentCount={currentBlogs.length}
+            totalCount={filteredBlogs.length}
+          />
+        </>
       )}
     </div>
   );

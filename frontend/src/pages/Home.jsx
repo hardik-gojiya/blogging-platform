@@ -3,11 +3,20 @@ import { api } from "../services/api";
 import { useBlog } from "../context/BlogContext";
 import BlogCard from "./Blog/BlogCard";
 import { Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination";
 
 function Home() {
+  const { page } = useParams();
+  const currentPage = parseInt(page) || 1;
+  const navigate = useNavigate();
   const { allBlogs } = useBlog();
   const [popularUsers, setPopularUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [totalPages, setTotalPages] = useState(11);
+  const [totalBlogs, setTotalBlogs] = useState(0);
+
+  const [blogsByPage, setBlogsByPage] = useState([]);
 
   const fetchPopularUsers = async () => {
     try {
@@ -34,6 +43,33 @@ function Home() {
     );
   });
 
+  const handlePageChange = (newPage) => {
+    if (newPage !== currentPage) {
+      navigate(`/page/${newPage}`);
+    }
+  };
+
+  const fetchBlogsByPage = async () => {
+    try {
+      let res = await api.get(`/blog/getBlogsByPage/${currentPage}`);
+      setBlogsByPage(res.data.blogs);
+      setTotalPages(res.data.totalPages);
+      setTotalBlogs(res.data.totalBlogs);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchBlogsByPage();
+    window.scrollTo({ top: 0 });
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (!page) {
+      navigate("/");
+    }
+  }, [page]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="mb-6 flex flex-col sm:flex-row items-center gap-4">
@@ -49,11 +85,18 @@ function Home() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Blog List */}
         <div className="w-full lg:w-2/3">
-          {filteredBlogs.length === 0 ? (
-            <p className="text-gray-500">No Blogs found for "{searchTerm}"</p>
+          {blogsByPage.length === 0 ? (
+            <p className="text-gray-500">No Blogs found </p>
           ) : (
-            filteredBlogs.map((blog) => <BlogCard key={blog._id} blog={blog} />)
+            blogsByPage.map((blog) => <BlogCard key={blog._id} blog={blog} />)
           )}
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            currentCount={blogsByPage.length}
+            totalCount={totalBlogs}
+          />
         </div>
 
         {/* Sidebar */}
